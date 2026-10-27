@@ -1,0 +1,13 @@
+var R=require("../../../chunks/ssr/[turbopack]_runtime.js")("server/app/courses/[courseId]/page.js")
+R.c("server/chunks/ssr/[root-of-the-server]__176abwsl6lcuu._.js")
+R.c("server/chunks/ssr/node_modules_next_dist_esm_build_templates_app-page_0exxqsuahl_fz.js")
+R.c("server/chunks/ssr/node_modules_next_dist_0janj0i6dqko7._.js")
+R.c("server/chunks/ssr/[root-of-the-server]__1y089dpus5jan._.js")
+R.c("server/chunks/ssr/[root-of-the-server]__0i4bcrn-qdi0m._.js")
+R.c("server/chunks/ssr/node_modules_next_dist_client_components_0wpq8j32_ibz4._.js")
+R.c("server/chunks/ssr/node_modules_next_dist_client_components_builtin_forbidden_0symwr9mbf-fh.js")
+R.c("server/chunks/ssr/node_modules_next_dist_client_components_builtin_unauthorized_0l_sp0xky89qu.js")
+R.c("server/chunks/ssr/node_modules_next_dist_client_components_builtin_global-error_0q-w892nagajq.js")
+R.c("server/chunks/ssr/_next-internal_server_app_courses_[courseId]_page_actions_1vhpd-32-eah7.js")
+R.m(30085)
+module.exports=R.m(30085).exports

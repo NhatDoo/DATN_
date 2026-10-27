@@ -1,0 +1,15 @@
+{
+  "app": {
+    "[project]/src/app/courses/[courseId]/page": [
+      "static/media/1854c6960aa5e9fd-s.p.2qdkzeru_ecot.woff2",
+      "static/media/c3d9c74ef0d9c07b-s.p.23aeddxv5enbo.woff2"
+    ],
+    "[project]/src/app/page": [
+      "static/media/1854c6960aa5e9fd-s.p.2qdkzeru_ecot.woff2",
+      "static/media/c3d9c74ef0d9c07b-s.p.23aeddxv5enbo.woff2"
+    ]
+  },
+  "appUsingSizeAdjust": true,
+  "pages": {},
+  "pagesUsingSizeAdjust": false
+}

@@ -1,0 +1,41 @@
+{
+  "status": 200,
+  "headers": {
+    "link": "</_next/static/media/1854c6960aa5e9fd-s.p.2qdkzeru_ecot.woff2>; rel=preload; as=\"font\"; crossorigin=\"\"; type=\"font/woff2\", </_next/static/media/c3d9c74ef0d9c07b-s.p.23aeddxv5enbo.woff2>; rel=preload; as=\"font\"; crossorigin=\"\"; type=\"font/woff2\"",
+    "x-nextjs-stale-time": "300",
+    "x-nextjs-prerender": "1",
+    "x-next-cache-tags": "_N_T_/layout,_N_T_/courses/layout,_N_T_/courses/[courseId]/layout,_N_T_/courses/[courseId]/page"
+  },
+  "segmentPaths": [
+    "/_tree",
+    "/_full",
+    "/courses/$d$courseId/__PAGE__"
+  ],
+  "prefetchHints": {
+    "hints": 49216,
+    "slots": {
+      "children": {
+        "hints": 49248,
+        "slots": {
+          "children": {
+            "hints": 49248,
+            "slots": {
+              "children": {
+                "hints": 49312,
+                "slots": null
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "routeCache": {
+    "key": "/route-cache/APP_PAGE/9be30ab6b69ed3186080d35db9ce3c582f3768f5748616f2ea247443f768542e/$/courses/[courseId]",
+    "owner": {
+      "kind": "APP_PAGE",
+      "sourceRoute": "/courses/[courseId]/page"
+    },
+    "isFallback": true
+  }
+}

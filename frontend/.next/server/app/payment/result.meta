@@ -1,0 +1,41 @@
+{
+  "status": 200,
+  "headers": {
+    "link": "</_next/static/media/1854c6960aa5e9fd-s.p.2qdkzeru_ecot.woff2>; rel=preload; as=\"font\"; crossorigin=\"\"; type=\"font/woff2\", </_next/static/media/c3d9c74ef0d9c07b-s.p.23aeddxv5enbo.woff2>; rel=preload; as=\"font\"; crossorigin=\"\"; type=\"font/woff2\"",
+    "x-nextjs-stale-time": "300",
+    "x-nextjs-prerender": "1",
+    "x-next-cache-tags": "_N_T_/layout,_N_T_/payment/layout,_N_T_/payment/result/layout,_N_T_/payment/result/page,_N_T_/payment/result"
+  },
+  "segmentPaths": [
+    "/_tree",
+    "/_full",
+    "/payment/result/__PAGE__"
+  ],
+  "prefetchHints": {
+    "hints": 49216,
+    "slots": {
+      "children": {
+        "hints": 49248,
+        "slots": {
+          "children": {
+            "hints": 49248,
+            "slots": {
+              "children": {
+                "hints": 49312,
+                "slots": null
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "routeCache": {
+    "key": "/route-cache/APP_PAGE/ae82f58e2ac98cabb522b5cbecb193f77cb98ab0aef2dc190209ec44188cbc63/$/payment/result",
+    "owner": {
+      "kind": "APP_PAGE",
+      "sourceRoute": "/payment/result/page"
+    },
+    "isFallback": false
+  }
+}
