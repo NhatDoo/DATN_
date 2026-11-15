@@ -3,7 +3,15 @@
 import { useEffect, useRef, useState } from "react";
 import { Play, Volume2 } from "lucide-react";
 
-export default function VideoPlayer({ src, poster }: { src?: string; poster: string }) {
+export default function VideoPlayer({
+  src,
+  poster,
+  onRetry,
+}: {
+  src?: string;
+  poster: string;
+  onRetry?: () => void;
+}) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [error, setError] = useState(false);
 
@@ -49,7 +57,7 @@ export default function VideoPlayer({ src, poster }: { src?: string; poster: str
 
   return (
     <div className="video-frame">
-      {error ? <div className="video-error">Không thể phát video. Kiểm tra URL HLS và quyền đọc của storage.</div> : null}
+      {error ? <div className="video-error">Không thể phát video hoặc quyền phát đã hết hạn. {onRetry && <button type="button" onClick={onRetry}>Lấy lại quyền phát</button>}</div> : null}
       <video ref={videoRef} controls playsInline poster={poster} className="video-element" />
     </div>
   );

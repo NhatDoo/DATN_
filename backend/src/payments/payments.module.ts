@@ -8,5 +8,6 @@ import { VnpayCallbackController } from './vnpay-callback.controller.js';
   imports: [AuthModule],
   controllers: [PaymentsController, VnpayCallbackController],
   providers: [PaymentsService],
+  exports: [PaymentsService],
 })
 export class PaymentsModule {}

@@ -32,4 +32,11 @@ export class AuthController {
   me(@Req() request: AuthRequest) {
     return request.user;
   }
+
+  @Post('presence')
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Cập nhật lần hoạt động gần nhất của tài khoản' })
+  presence(@Req() request: AuthRequest) {
+    return this.authService.updatePresence(request.user.id);
+  }
 }

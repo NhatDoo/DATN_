@@ -14,6 +14,13 @@ const settings: Record<string, string> = {
   VNPAY_RETURN_URL: 'https://merchant.example/api/payment/vnpay/return',
 };
 
+function canonicalQuery(params: Record<string, string>) {
+  return Object.keys(params)
+    .sort()
+    .map((key) => `${encodeURIComponent(key)}=${encodeURIComponent(params[key]).replace(/%20/g, '+')}`)
+    .join('&');
+}
+
 function signedCallback(overrides: Record<string, string> = {}) {
   const params: Record<string, string> = {
     vnp_TmnCode: 'TESTCODE',
@@ -27,9 +34,46 @@ function signedCallback(overrides: Record<string, string> = {}) {
     vnp_CreateDate: '20261027083000',
     ...overrides,
   };
-  const data = Object.keys(params).sort().map((key) => `${key}=${params[key]}`).join('&');
+  const data = canonicalQuery(params);
   params.vnp_SecureHash = createHmac('sha512', secret).update(data).digest('hex');
   return params;
+}
+
+function signedRefundResponse(responseCode = '00') {
+  const response: Record<string, string> = {
+    vnp_ResponseId: 'response-id',
+    vnp_Command: 'refund',
+    vnp_ResponseCode: responseCode,
+    vnp_Message: 'Refund accepted',
+    vnp_TmnCode: 'TESTCODE',
+    vnp_TxnRef: 'transaction-123',
+    vnp_Amount: '12500000',
+    vnp_BankCode: 'NCB',
+    vnp_PayDate: '20261115150000',
+    vnp_TransactionNo: '987654321',
+    vnp_TransactionType: '02',
+    vnp_TransactionStatus: '00',
+    vnp_OrderInfo: 'Hoan tien khoa hoc transaction-123',
+  };
+  const fields = [
+    'vnp_ResponseId',
+    'vnp_Command',
+    'vnp_ResponseCode',
+    'vnp_Message',
+    'vnp_TmnCode',
+    'vnp_TxnRef',
+    'vnp_Amount',
+    'vnp_BankCode',
+    'vnp_PayDate',
+    'vnp_TransactionNo',
+    'vnp_TransactionType',
+    'vnp_TransactionStatus',
+    'vnp_OrderInfo',
+  ];
+  response.vnp_SecureHash = createHmac('sha512', secret)
+    .update(fields.map((field) => response[field]).join('|'))
+    .digest('hex');
+  return response;
 }
 
 function makeService(payment: Record<string, unknown>) {
@@ -66,7 +110,7 @@ describe('PaymentsService', () => {
     const params = Object.fromEntries(url.searchParams.entries());
     const suppliedSignature = params.vnp_SecureHash;
     delete params.vnp_SecureHash;
-    const data = Object.keys(params).sort().map((key) => `${key}=${params[key]}`).join('&');
+    const data = canonicalQuery(params);
     const expectedSignature = createHmac('sha512', secret).update(data).digest('hex');
 
     expect(url.origin + url.pathname).toBe(settings.VNPAY_URL);
@@ -76,6 +120,116 @@ describe('PaymentsService', () => {
     expect(paymentCreate).toHaveBeenCalledWith(
       expect.objectContaining({ data: expect.objectContaining({ courseId: 'course-id', userId: 'user-id' }) }),
     );
+  });
+
+  it('automatically refunds paid course purchases even after the self-service deadline', async () => {
+    const paymentUpdateMany = vi.fn().mockResolvedValue({ count: 1 });
+    const paymentUpdate = vi.fn().mockResolvedValue({});
+    const enrollmentDelete = vi.fn().mockResolvedValue({ count: 1 });
+    const prisma = {
+      payment: {
+        findMany: vi.fn().mockResolvedValue([{
+          id: 'payment-id',
+          amount: { toNumber: () => 125000 },
+          status: PaymentStatus.PAID,
+          transactionRef: 'transaction-123',
+          userId: 'student-id',
+          courseId: 'course-id',
+          vnpCreateDate: '20261115140000',
+          transactionNo: '987654321',
+          enrollment: {
+            id: 'enrollment-id',
+            refundExpiresAt: new Date(Date.now() - 24 * 60 * 60 * 1000),
+          },
+        }]),
+        updateMany: paymentUpdateMany,
+      },
+      $transaction: vi.fn((callback) =>
+        callback({
+          learningProgress: { deleteMany: vi.fn().mockResolvedValue({ count: 2 }) },
+          enrollment: { deleteMany: enrollmentDelete },
+          payment: { update: paymentUpdate },
+        }),
+      ),
+    } as unknown as PrismaService;
+    const config = {
+      get: (name: string, fallback?: string) => settings[name] ?? fallback,
+    } as unknown as ConfigService;
+    const service = new PaymentsService(prisma, config);
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => signedRefundResponse(),
+      }),
+    );
+
+    try {
+      await expect(service.refundCoursePurchases('course-id', '127.0.0.1')).resolves.toEqual([
+        { status: PaymentStatus.REFUNDED, transactionRef: 'transaction-123' },
+      ]);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+
+    expect(paymentUpdateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'payment-id', status: PaymentStatus.PAID },
+        data: expect.objectContaining({ status: PaymentStatus.REFUND_PENDING }),
+      }),
+    );
+    expect(enrollmentDelete).toHaveBeenCalledWith({ where: { paymentId: 'payment-id' } });
+  });
+
+  it('keeps enrollment when VNPAY rejects an automatic refund', async () => {
+    const paymentUpdateMany = vi.fn().mockResolvedValue({ count: 1 });
+    const enrollmentDelete = vi.fn();
+    const transaction = vi.fn();
+    const prisma = {
+      payment: {
+        findMany: vi.fn().mockResolvedValue([{
+          id: 'payment-id',
+          amount: { toNumber: () => 125000 },
+          status: PaymentStatus.PAID,
+          transactionRef: 'transaction-123',
+          userId: 'student-id',
+          courseId: 'course-id',
+          vnpCreateDate: '20261115140000',
+          transactionNo: '987654321',
+          enrollment: { id: 'enrollment-id' },
+        }]),
+        updateMany: paymentUpdateMany,
+        findUnique: vi.fn().mockResolvedValue({ status: PaymentStatus.PAID }),
+      },
+      $transaction: transaction,
+    } as unknown as PrismaService;
+    const config = {
+      get: (name: string, fallback?: string) => settings[name] ?? fallback,
+    } as unknown as ConfigService;
+    const service = new PaymentsService(prisma, config);
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => signedRefundResponse('99'),
+      }),
+    );
+
+    try {
+      await expect(service.refundCoursePurchases('course-id', '127.0.0.1')).resolves.toEqual([
+        {
+          transactionRef: 'transaction-123',
+          status: PaymentStatus.PAID,
+          message: 'VNPAY rejected the refund request (99)',
+        },
+      ]);
+    } finally {
+      vi.unstubAllGlobals();
+    }
+
+    expect(paymentUpdateMany).toHaveBeenCalledTimes(2);
+    expect(enrollmentDelete).not.toHaveBeenCalled();
+    expect(transaction).not.toHaveBeenCalled();
   });
 
   it('marks a correctly signed, matching VNPAY payment as paid', async () => {
@@ -101,6 +255,22 @@ describe('PaymentsService', () => {
         data: expect.objectContaining({ status: PaymentStatus.PAID }),
       }),
     );
+  });
+
+  it('verifies URL-encoded VNPAY callback parameters containing spaces and Vietnamese text', async () => {
+    const { service, updateMany } = makeService({
+      id: 'payment-id',
+      amount: { toNumber: () => 125000 },
+      status: PaymentStatus.PENDING,
+      transactionRef: 'transaction-123',
+    });
+
+    const result = await service.handlePaymentCallback(
+      signedCallback({ vnp_OrderInfo: 'Thanh toán khóa học lập trình web' }),
+    );
+
+    expect(result.ok).toBe(true);
+    expect(updateMany).toHaveBeenCalledOnce();
   });
 
   it('rejects a callback whose amount changed after signing', async () => {
@@ -140,20 +310,93 @@ describe('PaymentsService', () => {
     expect(findFirst).toHaveBeenCalledOnce();
   });
 
-  it('creates enrollment with a refund deadline exactly one hour later', async () => {
+  it('marks a confirmed refund and revokes enrollment and learning progress', async () => {
+    const paymentUpdateMany = vi.fn().mockResolvedValue({ count: 1 });
+    const paymentUpdate = vi.fn().mockResolvedValue({});
+    const enrollmentDelete = vi.fn().mockResolvedValue({ count: 1 });
+    const progressDelete = vi.fn().mockResolvedValue({ count: 2 });
+    const prisma = {
+      payment: {
+        findFirst: vi.fn().mockResolvedValue({
+          id: 'payment-id',
+          amount: { toNumber: () => 125000 },
+          status: PaymentStatus.PAID,
+          transactionRef: 'transaction-123',
+          vnpCreateDate: '20261115140000',
+          transactionNo: '987654321',
+          enrollment: {
+            id: 'enrollment-id',
+            refundExpiresAt: new Date(Date.now() + 60_000),
+          },
+        }),
+        updateMany: paymentUpdateMany,
+      },
+      $transaction: vi.fn((callback) =>
+        callback({
+          learningProgress: { deleteMany: progressDelete },
+          enrollment: { deleteMany: enrollmentDelete },
+          payment: { update: paymentUpdate },
+        }),
+      ),
+    } as unknown as PrismaService;
+    const config = {
+      get: (name: string, fallback?: string) => settings[name] ?? fallback,
+    } as unknown as ConfigService;
+    const service = new PaymentsService(prisma, config);
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => signedRefundResponse(),
+      }),
+    );
+
+    try {
+      await expect(service.refund('transaction-123', 'user-id', '127.0.0.1')).resolves.toEqual({
+        status: PaymentStatus.REFUNDED,
+        transactionRef: 'transaction-123',
+      });
+    } finally {
+      vi.unstubAllGlobals();
+    }
+
+    expect(paymentUpdateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'payment-id', status: PaymentStatus.PAID },
+        data: expect.objectContaining({ status: PaymentStatus.REFUND_PENDING }),
+      }),
+    );
+    expect(progressDelete).toHaveBeenCalledOnce();
+    expect(enrollmentDelete).toHaveBeenCalledWith({ where: { paymentId: 'payment-id' } });
+    expect(paymentUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'payment-id' },
+        data: expect.objectContaining({ status: PaymentStatus.REFUNDED }),
+      }),
+    );
+  });
+
+  it('creates enrollment with a refund deadline exactly two hours later', async () => {
     const paidPayment = {
       id: 'payment-id',
       courseId: 'course-id',
       status: PaymentStatus.PAID,
+      enrollment: null,
+      course: { deletedAt: null },
     };
     const paymentFind = vi.fn().mockResolvedValue(paidPayment);
     const enrollmentFind = vi.fn().mockResolvedValue(null);
     const enrollmentCreate = vi.fn().mockImplementation(({ data }) => Promise.resolve(data));
     const prisma = {
       payment: { findFirst: paymentFind },
+      activityEvent: {
+        findFirst: vi.fn().mockResolvedValue(null),
+        create: vi.fn(),
+      },
       $transaction: vi.fn((callback) =>
         callback({
           enrollment: { findUnique: enrollmentFind, create: enrollmentCreate },
+          activityEvent: { findFirst: vi.fn().mockResolvedValue(null), create: vi.fn() },
         }),
       ),
     } as unknown as PrismaService;
@@ -167,7 +410,7 @@ describe('PaymentsService', () => {
 
     expect(enrollment.paymentId).toBe('payment-id');
     expect(enrollment.courseId).toBe('course-id');
-    expect(elapsed).toBe(60 * 60 * 1000);
+    expect(elapsed).toBe(2 * 60 * 60 * 1000);
     expect(enrollmentCreate).toHaveBeenCalledOnce();
   });
 });

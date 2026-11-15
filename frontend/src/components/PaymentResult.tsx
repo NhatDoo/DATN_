@@ -11,7 +11,7 @@ type Payment = {
   transactionRef: string;
   amount: string | number;
   status: "PENDING" | "PAID" | "FAILED" | "REFUND_PENDING" | "REFUNDED";
-  course: { id: string; title: string; slug: string };
+  course: { id: string; title: string; slug: string; deletedAt?: string | null };
   enrollment: { refundExpiresAt: string | null } | null;
 };
 
@@ -52,7 +52,7 @@ export default function PaymentResult() {
         if (!active) return;
         setPayment(result);
         setError("");
-        if (result.status === "PENDING" && attempts < 8) {
+        if ((result.status === "PENDING" || result.status === "REFUND_PENDING") && attempts < 8) {
           attempts += 1;
           timer = setTimeout(refresh, 2000);
         }
@@ -81,15 +81,34 @@ export default function PaymentResult() {
       });
       const result = await response.json();
       if (!response.ok) throw new Error(result.message || "Không thể xác nhận đăng ký.");
+      if (result.status === "REFUNDED") {
+        setPayment({ ...payment, status: "REFUNDED", enrollment: null });
+        return;
+      }
+      if (result.status === "REFUND_PENDING") {
+        setPayment({ ...payment, status: "REFUND_PENDING" });
+        return;
+      }
       router.replace(`/courses/${payment.course.id}`);
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : "Không thể kết nối máy chủ.");
+      try {
+        const statusResponse = await fetch(`${apiUrl}/payments/${encodeURIComponent(transactionRef)}`, {
+          headers: { Authorization: `Bearer ${token}` },
+          cache: "no-store",
+        });
+        if (statusResponse.ok) setPayment(await statusResponse.json() as Payment);
+      } catch (statusError) {
+        console.error("Could not refresh payment status after enrollment confirmation failed", statusError);
+      }
     } finally {
       setConfirming(false);
     }
   }
 
   const paid = payment?.status === "PAID";
+  const refunded = payment?.status === "REFUNDED";
+  const refundPending = payment?.status === "REFUND_PENDING";
   const enrolled = Boolean(payment?.enrollment);
   const failed = returnStatus === "failed" || payment?.status === "FAILED";
 
@@ -99,18 +118,20 @@ export default function PaymentResult() {
       <section className="payment-result-card">
         {loading ? <span className="payment-state-icon pending"><LoaderCircle size={25} className="spin" /></span> :
           paid ? <span className="payment-state-icon success"><BadgeCheck size={27} /></span> :
+          refunded ? <span className="payment-state-icon success"><BadgeCheck size={27} /></span> :
           failed ? <span className="payment-state-icon failed"><CircleAlert size={25} /></span> :
           <span className="payment-state-icon pending"><RefreshCw size={24} /></span>}
         <p className="eyebrow">KẾT QUẢ THANH TOÁN</p>
-        <h1>{loading ? "Đang xác nhận giao dịch" : paid ? "Thanh toán thành công" : failed ? "Giao dịch chưa hoàn tất" : "Đang chờ VNPAY xác nhận"}</h1>
+        <h1>{loading ? "Đang xác nhận giao dịch" : paid ? "Thanh toán thành công" : refunded ? "Đã hoàn tiền" : refundPending ? "Đang xử lý hoàn tiền" : failed ? "Giao dịch chưa hoàn tất" : "Đang chờ VNPAY xác nhận"}</h1>
         <p className="payment-result-copy">
-          {loading ? "Hệ thống đang đồng bộ kết quả từ VNPAY." : paid ? "VNPAY đã xác nhận khoản thanh toán. Xác nhận đăng ký để bắt đầu học." : failed ? "Bạn có thể quay lại khóa học và thử thanh toán lại." : "Nếu bạn vừa thanh toán, trạng thái sẽ được cập nhật tự động trong giây lát."}
+          {loading ? "Hệ thống đang đồng bộ kết quả từ VNPAY." : paid ? "VNPAY đã xác nhận khoản thanh toán. Xác nhận đăng ký để bắt đầu học." : refunded ? "VNPAY đã xác nhận hoàn tiền. Quyền truy cập khóa học đã được gỡ; bạn có thể mua lại khóa học nếu muốn." : refundPending ? "Yêu cầu hoàn tiền đang được VNPAY xử lý. Quyền truy cập chỉ bị gỡ sau khi hoàn tiền được xác nhận." : failed ? "Bạn có thể quay lại khóa học và thử thanh toán lại." : "Nếu bạn vừa thanh toán, trạng thái sẽ được cập nhật tự động trong giây lát."}
         </p>
         {payment && <div className="payment-summary"><span>{payment.course.title}</span><strong>{new Intl.NumberFormat("vi-VN").format(Number(payment.amount))}đ</strong></div>}
         {!token && <p className="payment-error">Hãy đăng nhập bằng tài khoản đã tạo giao dịch để xem và xác nhận enrollment.</p>}
         {error && <p className="payment-error" role="alert">{error}</p>}
         {paid && !enrolled && <button className="buy-button payment-confirm" disabled={confirming || !token} onClick={confirmEnrollment}>{confirming ? "Đang xác nhận…" : "Xác nhận đăng ký khóa học"}<ArrowRight size={17} /></button>}
         {enrolled && <Link className="buy-button payment-confirm" href={`/courses/${payment!.course.id}`}>Vào học ngay <ArrowRight size={17} /></Link>}
+        {refunded && payment && <Link className="payment-back-link" href={payment.course.deletedAt ? "/" : `/courses/${payment.course.id}`}>{payment.course.deletedAt ? "Khám phá khóa học khác" : "Quay lại trang khóa học"} <ArrowRight size={15} /></Link>}
         {failed && <Link className="payment-back-link" href="/">Quay lại danh sách khóa học <ArrowRight size={15} /></Link>}
         {transactionRef && <p className="transaction-ref">Mã giao dịch · {transactionRef}</p>}
       </section>

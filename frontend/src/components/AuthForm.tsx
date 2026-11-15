@@ -6,6 +6,7 @@ import { ArrowLeft, ArrowRight, Eye, EyeOff, KeyRound, Mail } from "lucide-react
 import { useRouter } from "next/navigation";
 
 export type AuthMode = "login" | "register" | "forgot";
+type LoginRole = "STUDENT" | "INSTRUCTOR";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "/api/v1";
 
@@ -20,6 +21,7 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [role, setRole] = useState<LoginRole | "">("");
   const [showPassword, setShowPassword] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
@@ -34,17 +36,22 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
       setMessage("Giao diện đã ghi nhận email. Tính năng gửi thư cần được kết nối với email service của hệ thống.");
       return;
     }
+    if ((mode === "login" || mode === "register") && !role) {
+      setError("Vui lòng chọn vai trò trước khi tiếp tục.");
+      return;
+    }
     setLoading(true);
     try {
       const response = await fetch(`${apiUrl}/auth/${mode}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(mode === "register" ? { name, email, password } : { email, password }),
+        body: JSON.stringify(mode === "register" ? { name, email, password, role } : { email, password, role }),
       });
       const result = await response.json();
       if (!response.ok) throw new Error(result.message || "Không thể xử lý yêu cầu. Vui lòng thử lại.");
       localStorage.setItem("hocmo_access_token", result.accessToken);
       localStorage.setItem("hocmo_user", JSON.stringify(result.user));
+      window.dispatchEvent(new Event("hocmo-auth-changed"));
       router.push("/");
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : "Không thể kết nối máy chủ.");
@@ -83,6 +90,13 @@ export default function AuthForm({ mode }: { mode: AuthMode }) {
               <label className="field-label">Mật khẩu
                 <span className="input-wrap"><input type={showPassword ? "text" : "password"} autoComplete={mode === "login" ? "current-password" : "new-password"} placeholder="Ít nhất 8 ký tự" value={password} onChange={(event) => setPassword(event.target.value)} required minLength={8} /><button className="password-toggle" type="button" aria-label={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"} onClick={() => setShowPassword(!showPassword)}>{showPassword ? <EyeOff size={17} /> : <Eye size={17} />}</button></span>
               </label>
+            )}
+            {(mode === "login" || mode === "register") && (
+              <fieldset className="role-field">
+                <legend>Vai trò {mode === "register" ? "tài khoản" : "đăng nhập"}</legend>
+                <label><input type="radio" name="account-role" value="STUDENT" checked={role === "STUDENT"} onChange={() => setRole("STUDENT")} /> Học sinh</label>
+                <label><input type="radio" name="account-role" value="INSTRUCTOR" checked={role === "INSTRUCTOR"} onChange={() => setRole("INSTRUCTOR")} /> Giảng viên / giáo viên</label>
+              </fieldset>
             )}
             {mode === "login" && <Link className="forgot-link" href="/forgot-password">Quên mật khẩu?</Link>}
             {error && <p className="form-error" role="alert">{error}</p>}

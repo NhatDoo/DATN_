@@ -6,9 +6,10 @@ import {
   ServiceUnavailableException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { PaymentStatus } from '@prisma/client';
+import { ActivityType, PaymentStatus, Prisma } from '@prisma/client';
 import { createHmac, randomUUID, timingSafeEqual } from 'node:crypto';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { trackRecommendationConversion } from '../courses/recommendation-attribution.js';
 
 type VnpayQuery = Record<string, unknown>;
 type PaymentCallback = {
@@ -17,6 +18,9 @@ type PaymentCallback = {
   acknowledgmentCode: string;
   transactionRef?: string;
 };
+
+const refundWindowMs = 2 * 60 * 60 * 1000;
+type RefundablePayment = Prisma.PaymentGetPayload<{ include: { enrollment: true } }>;
 
 @Injectable()
 export class PaymentsService {
@@ -31,13 +35,18 @@ export class PaymentsService {
   async createCheckout(courseId: string, userId: string, ipAddress: string) {
     const config = this.getConfig();
     const now = new Date();
+    const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(courseId);
     const course = await this.prisma.course.findFirst({
-      where: { id: courseId, status: 'PUBLISHED' },
+      where: {
+        ...(isUuid ? { id: courseId } : { slug: courseId }),
+        status: 'PUBLISHED',
+        deletedAt: null,
+      },
       select: { id: true, title: true, price: true },
     });
     if (!course) throw new NotFoundException('Published course not found');
     const existingEnrollment = await this.prisma.enrollment.findUnique({
-      where: { userId_courseId: { userId, courseId } },
+      where: { userId_courseId: { userId, courseId: course.id } },
       select: { id: true },
     });
     if (existingEnrollment) throw new ConflictException('You already own this course');
@@ -51,7 +60,7 @@ export class PaymentsService {
         amount: amountVnd,
         vnpCreateDate: formatVnpDate(now),
         userId,
-        courseId,
+        courseId: course.id,
       },
       select: { id: true },
     });
@@ -154,7 +163,7 @@ export class PaymentsService {
         responseCode: true,
         paidAt: true,
         refundedAt: true,
-        course: { select: { id: true, title: true, slug: true } },
+        course: { select: { id: true, title: true, slug: true, deletedAt: true } },
         enrollment: { select: { enrolledAt: true, refundExpiresAt: true } },
       },
     });
@@ -162,17 +171,23 @@ export class PaymentsService {
     return payment;
   }
 
-  async confirmEnrollment(transactionRef: string, userId: string) {
+  async confirmEnrollment(transactionRef: string, userId: string, serverIp = '127.0.0.1') {
     const payment = await this.prisma.payment.findFirst({
       where: { transactionRef, userId },
-      select: { id: true, courseId: true, status: true },
+      include: {
+        enrollment: true,
+        course: { select: { deletedAt: true } },
+      },
     });
     if (!payment) throw new NotFoundException('Payment not found');
     if (payment.status !== PaymentStatus.PAID) {
       throw new ConflictException('Payment has not been confirmed by VNPAY');
     }
+    if (payment.course.deletedAt) {
+      return this.processRefund(payment, userId, serverIp);
+    }
 
-    return this.prisma.$transaction(async (tx) => {
+    const enrollment = await this.prisma.$transaction(async (tx) => {
       const current = await tx.enrollment.findUnique({
         where: { userId_courseId: { userId, courseId: payment.courseId } },
       });
@@ -181,20 +196,27 @@ export class PaymentsService {
         throw new ConflictException('You already own this course');
       }
       const enrolledAt = new Date();
-      return tx.enrollment.create({
+      const enrollment = await tx.enrollment.create({
         data: {
           userId,
           courseId: payment.courseId,
           paymentId: payment.id,
           enrolledAt,
-          refundExpiresAt: new Date(enrolledAt.getTime() + 60 * 60 * 1000),
+          refundExpiresAt: new Date(enrolledAt.getTime() + refundWindowMs),
         },
       });
+      await trackRecommendationConversion(
+        tx,
+        userId,
+        payment.courseId,
+        ActivityType.RECOMMENDATION_ENROLLMENT,
+      );
+      return enrollment;
     });
+    return enrollment;
   }
 
   async refund(transactionRef: string, userId: string, serverIp: string) {
-    const config = this.getConfig();
     const payment = await this.prisma.payment.findFirst({
       where: { transactionRef, userId },
       include: { enrollment: true },
@@ -204,8 +226,54 @@ export class PaymentsService {
       throw new ConflictException('Only a confirmed enrollment can be refunded');
     }
     if (!payment.enrollment.refundExpiresAt || Date.now() > payment.enrollment.refundExpiresAt.getTime()) {
-      throw new ConflictException('The one-hour refund period has expired');
+      throw new ConflictException('The two-hour refund period has expired');
     }
+    return this.processRefund(payment, userId, serverIp);
+  }
+
+  async refundCoursePurchases(courseId: string, serverIp: string) {
+    const payments = await this.prisma.payment.findMany({
+      where: { courseId, status: { in: [PaymentStatus.PAID, PaymentStatus.REFUND_PENDING] } },
+      include: { enrollment: true },
+      orderBy: { createdAt: 'asc' },
+    });
+    const refunds: Array<{
+      transactionRef: string;
+      status: PaymentStatus;
+      message?: string;
+    }> = [];
+    for (const payment of payments) {
+      if (payment.status === PaymentStatus.REFUND_PENDING) {
+        refunds.push({
+          transactionRef: payment.transactionRef,
+          status: payment.status,
+          message: 'A refund request is already being processed',
+        });
+        continue;
+      }
+      try {
+        refunds.push(await this.processRefund(payment, payment.userId, serverIp));
+      } catch (error) {
+        const current = await this.prisma.payment.findUnique({
+          where: { id: payment.id },
+          select: { status: true },
+        });
+        refunds.push({
+          transactionRef: payment.transactionRef,
+          status: current?.status ?? payment.status,
+          message: error instanceof Error ? error.message : 'Refund request failed',
+        });
+      }
+    }
+    return refunds;
+  }
+
+  private async processRefund(
+    payment: RefundablePayment,
+    userId: string,
+    serverIp: string,
+  ) {
+    const config = this.getConfig();
     if (!payment.vnpCreateDate) throw new ConflictException('VNPAY transaction date is missing');
 
     const requestId = randomUUID().replace(/-/g, '');
@@ -283,7 +351,7 @@ export class PaymentsService {
           lesson: { section: { courseId: payment.courseId } },
         },
       });
-      await tx.enrollment.deleteMany({ where: { id: payment.enrollment!.id } });
+      await tx.enrollment.deleteMany({ where: { paymentId: payment.id } });
       await tx.payment.update({
         where: { id: payment.id },
         data: {
@@ -334,11 +402,7 @@ export class PaymentsService {
   }
 
   private signQuery(params: Record<string, string>, secret: string) {
-    const data = Object.keys(params)
-      .sort()
-      .map((key) => `${key}=${params[key]}`)
-      .join('&');
-    return hmacSha512(secret, data);
+    return hmacSha512(secret, canonicalQuery(params));
   }
 
   private normalizeIp(ipAddress: string) {
@@ -386,10 +450,16 @@ function normalizeQuery(query: VnpayQuery): Record<string, string> | null {
 function verifyQuerySignature(params: Record<string, string>, secret: string) {
   const supplied = params.vnp_SecureHash;
   if (!supplied) return false;
-  const data = Object.keys(params)
-    .filter((key) => key !== 'vnp_SecureHash' && key !== 'vnp_SecureHashType')
+  return safeHashEquals(
+    hmacSha512(secret, canonicalQuery(params, ['vnp_SecureHash', 'vnp_SecureHashType'])),
+    supplied,
+  );
+}
+
+function canonicalQuery(params: Record<string, string>, excludedKeys: string[] = []) {
+  return Object.keys(params)
+    .filter((key) => !excludedKeys.includes(key))
     .sort()
-    .map((key) => `${key}=${params[key]}`)
+    .map((key) => `${encodeURIComponent(key)}=${encodeURIComponent(params[key]).replace(/%20/g, '+')}`)
     .join('&');
-  return safeHashEquals(hmacSha512(secret, data), supplied);
 }

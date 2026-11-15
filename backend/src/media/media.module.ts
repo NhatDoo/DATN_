@@ -8,5 +8,6 @@ import { StorageService } from './storage.service.js';
   imports: [AuthModule],
   controllers: [MediaController],
   providers: [MediaService, StorageService],
+  exports: [MediaService],
 })
 export class MediaModule {}

@@ -7,6 +7,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
     instrument: ObserveInstrument,
   });
+  app.enableCors({ origin: process.env.FRONTEND_URL ?? 'http://localhost:8080' });
   app.setGlobalPrefix('api/v1', {
     exclude: [
       { path: 'api/payment/vnpay/return', method: RequestMethod.GET },

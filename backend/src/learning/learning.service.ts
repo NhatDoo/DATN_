@@ -6,11 +6,16 @@ import {
 } from '@nestjs/common';
 import { ActivityType, CourseStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service.js';
+import { MediaService } from '../media/media.service.js';
+import { trackRecommendationConversion } from '../courses/recommendation-attribution.js';
 import { UpdateProgressDto } from './learning.dto.js';
 
 @Injectable()
 export class LearningService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly mediaService: MediaService,
+  ) {}
 
   async enroll(userId: string, courseId: string) {
     const course = await this.prisma.course.findFirst({
@@ -22,7 +27,16 @@ export class LearningService {
       throw new ForbiddenException('Paid courses must be purchased through VNPAY');
     }
     try {
-      return await this.prisma.enrollment.create({ data: { userId, courseId } });
+      return await this.prisma.$transaction(async (tx) => {
+        const enrollment = await tx.enrollment.create({ data: { userId, courseId } });
+        await trackRecommendationConversion(
+          tx,
+          userId,
+          courseId,
+          ActivityType.RECOMMENDATION_ENROLLMENT,
+        );
+        return enrollment;
+      });
     } catch (error) {
       if (error && typeof error === 'object' && 'code' in error && error.code === 'P2002') {
         throw new ConflictException('Already enrolled in this course');
@@ -62,6 +76,14 @@ export class LearningService {
     await this.prisma.activityEvent.create({
       data: { userId, courseId: lesson.section.courseId, type: ActivityType.LESSON_PROGRESS },
     });
+    if (completed) {
+      await trackRecommendationConversion(
+        this.prisma,
+        userId,
+        lesson.section.courseId,
+        ActivityType.RECOMMENDATION_COMPLETION,
+      );
+    }
     return progress;
   }
 
@@ -86,12 +108,19 @@ export class LearningService {
       },
       orderBy: { enrolledAt: 'desc' },
     });
-    return enrollments.map(({ course, ...enrollment }) => {
-      const lessons = course.sections.flatMap((section) => section.lessons);
+    const result = enrollments.map(({ course, ...enrollment }) => {
+      const sections = course.sections.map((section) => ({
+        ...section,
+        lessons: section.lessons.map(({ videoUrl, ...lesson }) => ({
+          ...lesson,
+          hasVideo: Boolean(videoUrl),
+        })),
+      }));
+      const lessons = sections.flatMap((section) => section.lessons);
       const completedLessons = lessons.filter((lesson) => lesson.progress[0]?.completedAt).length;
       return {
         ...enrollment,
-        course,
+        course: { ...course, sections },
         progress: {
           completedLessons,
           totalLessons: lessons.length,
@@ -99,6 +128,18 @@ export class LearningService {
         },
       };
     });
+    const thumbnails = await this.mediaService.resolvePublicImageUrls(
+      result.map(({ course }) => course.thumbnail),
+    );
+    return result.map((enrollment) => ({
+      ...enrollment,
+      course: {
+        ...enrollment.course,
+        thumbnail: enrollment.course.thumbnail
+          ? thumbnails.get(enrollment.course.thumbnail) ?? enrollment.course.thumbnail
+          : null,
+      },
+    }));
   }
 
   activity(userId: string, limit: number) {

@@ -28,12 +28,16 @@ export class PaymentsController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Xác nhận đăng ký sau khi VNPAY báo giao dịch thành công' })
   confirmEnrollment(@Param('transactionRef') transactionRef: string, @Req() request: AuthRequest) {
-    return this.paymentsService.confirmEnrollment(transactionRef, request.user.id);
+    return this.paymentsService.confirmEnrollment(
+      transactionRef,
+      request.user.id,
+      request.ip ?? '127.0.0.1',
+    );
   }
 
   @Post(':transactionRef/refund')
   @ApiBearerAuth()
-  @ApiOperation({ summary: 'Yêu cầu hoàn tiền trong vòng một giờ từ lúc đăng ký' })
+  @ApiOperation({ summary: 'Yêu cầu hoàn tiền trong vòng hai giờ từ lúc đăng ký' })
   refund(@Param('transactionRef') transactionRef: string, @Req() request: AuthRequest) {
     return this.paymentsService.refund(
       transactionRef,

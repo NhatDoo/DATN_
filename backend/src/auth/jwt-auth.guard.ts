@@ -33,7 +33,10 @@ export class JwtAuthGuard implements CanActivate {
       throw new UnauthorizedException('Bearer token is required');
     }
     const [scheme, token] = authorization.split(' ');
-    if (scheme !== 'Bearer' || !token) throw new UnauthorizedException();
+    if (scheme !== 'Bearer' || !token) {
+      if (isPublic) return true;
+      throw new UnauthorizedException();
+    }
     try {
       const payload = await this.jwtService.verifyAsync<{
         sub: string;
@@ -43,6 +46,7 @@ export class JwtAuthGuard implements CanActivate {
       request.user = { id: payload.sub, email: payload.email, role: payload.role };
       return true;
     } catch {
+      if (isPublic) return true;
       throw new UnauthorizedException('Invalid or expired bearer token');
     }
   }

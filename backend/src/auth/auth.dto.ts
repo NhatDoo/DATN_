@@ -1,6 +1,6 @@
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { ApiProperty } from '@nestjs/swagger';
 import { UserRole } from '@prisma/client';
-import { IsEmail, IsEnum, IsOptional, IsString, MinLength } from 'class-validator';
+import { IsEmail, IsEnum, IsString, MinLength } from 'class-validator';
 
 export class RegisterDto {
   @ApiProperty()
@@ -17,15 +17,9 @@ export class RegisterDto {
   @MinLength(8)
   password!: string;
 
-  @ApiPropertyOptional({ enum: [UserRole.STUDENT, UserRole.INSTRUCTOR] })
-  @IsOptional()
+  @ApiProperty({ enum: [UserRole.STUDENT, UserRole.INSTRUCTOR] })
   @IsEnum([UserRole.STUDENT, UserRole.INSTRUCTOR])
-  role?: UserRole;
-
-  @ApiPropertyOptional({ description: 'Bắt buộc nếu đăng ký tài khoản giảng viên' })
-  @IsOptional()
-  @IsString()
-  inviteCode?: string;
+  role!: UserRole;
 }
 
 export class LoginDto {
@@ -36,4 +30,8 @@ export class LoginDto {
   @ApiProperty()
   @IsString()
   password!: string;
+
+  @ApiProperty({ enum: [UserRole.STUDENT, UserRole.INSTRUCTOR] })
+  @IsEnum([UserRole.STUDENT, UserRole.INSTRUCTOR])
+  role!: UserRole;
 }

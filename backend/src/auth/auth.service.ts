@@ -13,13 +13,7 @@ export class AuthService {
   ) {}
 
   async register(dto: RegisterDto) {
-    const role = dto.role ?? UserRole.STUDENT;
-    if (role === UserRole.INSTRUCTOR) {
-      const inviteCode = process.env.INSTRUCTOR_INVITE_CODE;
-      if (!inviteCode || dto.inviteCode !== inviteCode) {
-        throw new UnauthorizedException('Instructor invite code is invalid');
-      }
-    }
+    const role = dto.role;
     try {
       const user = await this.prisma.user.create({
         data: {
@@ -43,11 +37,23 @@ export class AuthService {
     const user = await this.prisma.user.findUnique({
       where: { email: dto.email.toLowerCase() },
     });
-    if (!user || !(await bcrypt.compare(dto.password, user.passwordHash))) {
+    if (
+      !user ||
+      user.role !== dto.role ||
+      !(await bcrypt.compare(dto.password, user.passwordHash))
+    ) {
       throw new UnauthorizedException('Invalid email or password');
     }
     const { passwordHash: _, ...safeUser } = user;
     return this.createSession(safeUser);
+  }
+
+  updatePresence(userId: string) {
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: { lastSeenAt: new Date() },
+      select: { lastSeenAt: true },
+    });
   }
 
   private async createSession(user: {

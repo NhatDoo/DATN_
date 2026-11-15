@@ -1,17 +1,50 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { ArrowDownWideNarrow, ArrowUpRight, Search, SlidersHorizontal, Sparkles } from "lucide-react";
+import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
+import { ArrowDownWideNarrow, ArrowLeft, ArrowRight, ArrowUpRight, Search, SlidersHorizontal, Sparkles, WandSparkles } from "lucide-react";
 import CourseCard from "@/components/CourseCard";
-import { courses, categories, type Course } from "@/lib/courses";
+import { courseFromApi, type Course } from "@/lib/courses";
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "/api/v1";
+const coursesPerPage = 12;
+const subscribeAuth = (callback: () => void) => {
+  window.addEventListener("storage", callback);
+  window.addEventListener("hocmo-auth-changed", callback);
+  return () => {
+    window.removeEventListener("storage", callback);
+    window.removeEventListener("hocmo-auth-changed", callback);
+  };
+};
+const getAuthToken = () => localStorage.getItem("hocmo_access_token");
+const getServerToken = () => null;
 
 export default function HomePage() {
   const [query, setQuery] = useState("");
   const [activeCategory, setActiveCategory] = useState("Tất cả");
   const [sortBy, setSortBy] = useState("featured");
-  const [apiCourses, setApiCourses] = useState<Course[] | null>(null);
+  const [page, setPage] = useState(1);
+  const [apiCourses, setApiCourses] = useState<Course[]>([]);
+  const [apiCategories, setApiCategories] = useState<string[]>([]);
+  const [coursesLoading, setCoursesLoading] = useState(true);
+  const [coursesError, setCoursesError] = useState("");
+  const [recommendations, setRecommendations] = useState<Course[]>([]);
+  const token = useSyncExternalStore(subscribeAuth, getAuthToken, getServerToken);
+
+  useEffect(() => {
+    let active = true;
+    fetch(`${apiUrl}/courses/filters`)
+      .then(async (response) => {
+        if (!response.ok) throw new Error("Không thể tải danh mục khóa học.");
+        return response.json();
+      })
+      .then((filters) => {
+        if (active && Array.isArray(filters.categories)) setApiCategories(filters.categories);
+      })
+      .catch(() => undefined);
+    return () => {
+      active = false;
+    };
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -21,46 +54,63 @@ export default function HomePage() {
     })
       .then((response) => (response.ok ? response.json() : Promise.reject()))
       .then((result) => {
-        if (!cancelled && Array.isArray(result.items) && result.items.length) {
-          setApiCourses(
-            result.items.map((item: Record<string, unknown>) => {
-              const course = item as Omit<Partial<Course>, "instructor"> & {
-                instructor?: string | { name?: string };
-              };
-              return {
-                ...courses[0],
-                ...course,
-                id: course.id ?? course.slug ?? courses[0].id,
-                slug: course.id ?? course.slug ?? courses[0].slug,
-                price: Number(course.price ?? 0),
-                thumbnail: course.thumbnail || courses[0].thumbnail,
-                instructor:
-                  typeof course.instructor === "object"
-                    ? course.instructor.name ?? courses[0].instructor
-                    : course.instructor ?? courses[0].instructor,
-              };
-            }),
-          );
+        if (cancelled) return;
+        if (!Array.isArray(result.items)) throw new Error("Dữ liệu khóa học từ máy chủ không hợp lệ.");
+        setApiCourses(result.items.map((item: Record<string, unknown>) => courseFromApi(item)));
+      })
+      .catch((requestError: unknown) => {
+        if (!cancelled) {
+          setCoursesError(requestError instanceof Error ? requestError.message : "Không thể kết nối máy chủ.");
         }
       })
-      .catch(() => undefined);
+      .finally(() => {
+        if (!cancelled) setCoursesLoading(false);
+      });
     return () => {
       cancelled = true;
     };
   }, []);
 
+  useEffect(() => {
+    let cancelled = false;
+    if (!token) return;
+    fetch(`${apiUrl}/courses/recommendations/me?limit=6`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
+      .then(async (response) => {
+        if (!response.ok) throw new Error("Không thể tải gợi ý khóa học.");
+        return response.json();
+      })
+      .then((result) => {
+        if (cancelled) return;
+        setRecommendations((result.items ?? []).map((item: Record<string, unknown>) => courseFromApi(item)));
+      })
+      .catch(() => {
+        if (!cancelled) setRecommendations([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [token]);
+
   const visibleCourses = useMemo(() => {
-    const source = apiCourses ?? courses;
+    const source = apiCourses;
     const normalizedQuery = query.trim().toLocaleLowerCase("vi");
     const filtered = source.filter((course) => {
       const matchesCategory = activeCategory === "Tất cả" || course.category === activeCategory;
-      const searchText = `${course.title} ${course.category} ${course.instructor} ${course.description}`;
+      const searchText = `${course.title} ${course.category} ${course.tags?.join(" ") ?? ""} ${course.instructor} ${course.description}`;
       return matchesCategory && searchText.toLocaleLowerCase("vi").includes(normalizedQuery);
     });
     if (sortBy === "price-low") return [...filtered].sort((a, b) => a.price - b.price);
     if (sortBy === "rating") return [...filtered].sort((a, b) => b.rating - a.rating);
     return filtered;
   }, [activeCategory, apiCourses, query, sortBy]);
+  const pageCount = Math.max(1, Math.ceil(visibleCourses.length / coursesPerPage));
+  const currentPage = Math.min(page, pageCount);
+  const pageCourses = visibleCourses.slice(
+    (currentPage - 1) * coursesPerPage,
+    currentPage * coursesPerPage,
+  );
 
   function searchCourses(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -112,7 +162,7 @@ export default function HomePage() {
 
         <div className="catalog-toolbar">
           <div className="category-tabs" role="tablist" aria-label="Lọc theo danh mục">
-            {categories.map((category) => (
+            {["Tất cả", ...apiCategories].map((category) => (
               <button
                 className={activeCategory === category ? "category-tab active" : "category-tab"}
                 key={category}
@@ -136,15 +186,85 @@ export default function HomePage() {
           </label>
         </div>
 
-        {visibleCourses.length ? (
+        {coursesLoading ? (
+          <div className="empty-results" role="status"><h3>Đang tải khóa học…</h3></div>
+        ) : coursesError ? (
+          <div className="empty-results" role="alert"><h3>Không thể tải khóa học</h3><p>{coursesError}</p></div>
+        ) : visibleCourses.length ? (
           <div className="course-grid">
-            {visibleCourses.map((course, index) => <CourseCard course={course} index={index} key={course.id} />)}
+            {pageCourses.map((course, index) => <CourseCard course={course} index={index} key={course.id} />)}
           </div>
         ) : (
-          <div className="empty-results"><Search size={24} /><h3>Chưa tìm thấy khóa học phù hợp</h3><p>Thử một từ khóa khác hoặc chọn danh mục khác nhé.</p></div>
+          <div className="empty-results"><Search size={24} /><h3>{apiCourses.length ? "Chưa tìm thấy khóa học phù hợp" : "Chưa có khóa học nào được xuất bản"}</h3><p>{apiCourses.length ? "Thử một từ khóa khác hoặc chọn danh mục khác nhé." : "Các khóa học đã xuất bản sẽ hiển thị tại đây."}</p></div>
         )}
-        <div className="catalog-footer"><span>Đang xem {visibleCourses.length} khóa học</span><span className="catalog-footer-mark">HỌC CÓ CHỦ ĐÍCH <ArrowUpRight size={15} /></span></div>
+        {!coursesLoading && !coursesError && pageCount > 1 && (
+          <nav className="course-pagination" aria-label="Phân trang khóa học">
+            <button
+              type="button"
+              className="pagination-arrow"
+              aria-label="Trang trước"
+              disabled={currentPage === 1}
+              onClick={() => setPage(currentPage - 1)}
+            >
+              <ArrowLeft size={16} /> Trước
+            </button>
+            <div className="pagination-pages">
+              {Array.from({ length: pageCount }, (_, index) => index + 1).map((pageNumber) => (
+                <button
+                  type="button"
+                  key={pageNumber}
+                  className={pageNumber === currentPage ? "pagination-page active" : "pagination-page"}
+                  aria-label={`Trang ${pageNumber}`}
+                  aria-current={pageNumber === currentPage ? "page" : undefined}
+                  onClick={() => setPage(pageNumber)}
+                >
+                  {pageNumber}
+                </button>
+              ))}
+            </div>
+            <button
+              type="button"
+              className="pagination-arrow"
+              aria-label="Trang sau"
+              disabled={currentPage === pageCount}
+              onClick={() => setPage(currentPage + 1)}
+            >
+              Sau <ArrowRight size={16} />
+            </button>
+          </nav>
+        )}
+        <div className="catalog-footer"><span>Trang {currentPage}/{pageCount} · Hiển thị {pageCourses.length}/{visibleCourses.length} khóa học</span><span className="catalog-footer-mark">HỌC CÓ CHỦ ĐÍCH <ArrowUpRight size={15} /></span></div>
       </section>
+
+      {token && recommendations.length > 0 && (
+        <section className="recommendations-section" aria-labelledby="recommendations-heading">
+          <div className="section-heading">
+            <div>
+              <p className="eyebrow section-eyebrow"><WandSparkles size={14} /> DÀNH RIÊNG CHO BẠN</p>
+              <h2 id="recommendations-heading">Có thể bạn sẽ <em>thích.</em></h2>
+            </div>
+          </div>
+          <div className="course-grid">
+            {recommendations.map((course, index) => (
+              <CourseCard
+                course={course}
+                index={index}
+                key={course.id}
+                onSelect={() => {
+                  const token = localStorage.getItem("hocmo_access_token");
+                  if (token) {
+                    void fetch(`${apiUrl}/courses/${course.id}/recommendation-click`, {
+                      method: "POST",
+                      headers: { Authorization: `Bearer ${token}` },
+                      keepalive: true,
+                    });
+                  }
+                }}
+              />
+            ))}
+          </div>
+        </section>
+      )}
 
       <section className="learning-note" id="about">
         <div className="note-number">02 / BẮT ĐẦU</div>

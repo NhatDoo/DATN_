@@ -11,6 +11,7 @@ import { LearningModule } from './learning/learning.module.js';
 import { MediaModule } from './media/media.module.js';
 import { JwtAuthGuard } from './auth/jwt-auth.guard.js';
 import { PaymentsModule } from './payments/payments.module.js';
+import { StatisticsModule } from './statistics/statistics.module.js';
 
 export const { ObserveModule, ObserveInstrument } = createObserveModule();
 
@@ -31,6 +32,7 @@ export const { ObserveModule, ObserveInstrument } = createObserveModule();
     LearningModule,
     MediaModule,
     PaymentsModule,
+    StatisticsModule,
   ],
   controllers: [AppController],
   providers: [AppService, { provide: APP_GUARD, useClass: JwtAuthGuard }],
