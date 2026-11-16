@@ -1,11 +1,16 @@
 {
   "/_global-error/page": "/_global-error",
   "/_not-found/page": "/_not-found",
+  "/about/page": "/about",
   "/courses/[courseId]/page": "/courses/[courseId]",
   "/favicon.ico/route": "/favicon.ico",
+  "/feedback/page": "/feedback",
   "/forgot-password/page": "/forgot-password",
+  "/instructor/page": "/instructor",
   "/login/page": "/login",
+  "/my-courses/page": "/my-courses",
   "/page": "/",
   "/payment/result/page": "/payment/result",
-  "/register/page": "/register"
+  "/register/page": "/register",
+  "/statistics/page": "/statistics"
 }

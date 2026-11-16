@@ -106,6 +106,9 @@ self.__SERVER_FILES_MANIFEST={
       }
     },
     "outputFileTracingRoot": "/workspaces/codespaces-blank/frontend",
+    "allowedDevOrigins": [
+      "127.0.0.1"
+    ],
     "enablePrerenderSourceMaps": true,
     "cacheComponents": true,
     "cacheLife": {
@@ -236,7 +239,7 @@ self.__SERVER_FILES_MANIFEST={
       "browserDebugInfoInTerminal": "warn",
       "lockDistDir": true,
       "disableResumeDataCacheCompression": false,
-      "proxyClientMaxBodySize": 10485760,
+      "proxyClientMaxBodySize": 545259520,
       "hideLogsAfterAbort": false,
       "mcpServer": true,
       "exposeRuntimeErrorsToHMR": false,

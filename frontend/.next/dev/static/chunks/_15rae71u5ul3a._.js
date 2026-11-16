@@ -375,6 +375,7 @@ function AuthForm({ mode }) {
     const [name, setName] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])("");
     const [email, setEmail] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])("");
     const [password, setPassword] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])("");
+    const [role, setRole] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])("");
     const [showPassword, setShowPassword] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
     const [message, setMessage] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])("");
     const [error, setError] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])("");
@@ -388,6 +389,10 @@ function AuthForm({ mode }) {
             setMessage("Giao diện đã ghi nhận email. Tính năng gửi thư cần được kết nối với email service của hệ thống.");
             return;
         }
+        if ((mode === "login" || mode === "register") && !role) {
+            setError("Vui lòng chọn vai trò trước khi tiếp tục.");
+            return;
+        }
         setLoading(true);
         try {
             const response = await fetch(`${apiUrl}/auth/${mode}`, {
@@ -398,16 +403,19 @@ function AuthForm({ mode }) {
                 body: JSON.stringify(mode === "register" ? {
                     name,
                     email,
-                    password
+                    password,
+                    role
                 } : {
                     email,
-                    password
+                    password,
+                    role
                 })
             });
             const result = await response.json();
             if (!response.ok) throw new Error(result.message || "Không thể xử lý yêu cầu. Vui lòng thử lại.");
             localStorage.setItem("hocmo_access_token", result.accessToken);
             localStorage.setItem("hocmo_user", JSON.stringify(result.user));
+            window.dispatchEvent(new Event("hocmo-auth-changed"));
             router.push("/");
         } catch (requestError) {
             setError(requestError instanceof Error ? requestError.message : "Không thể kết nối máy chủ.");
@@ -429,14 +437,14 @@ function AuthForm({ mode }) {
                                 size: 17
                             }, void 0, false, {
                                 fileName: "[project]/src/components/AuthForm.tsx",
-                                lineNumber: 59,
+                                lineNumber: 66,
                                 columnNumber: 46
                             }, this),
                             " Về trang chủ"
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/AuthForm.tsx",
-                        lineNumber: 59,
+                        lineNumber: 66,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -447,14 +455,14 @@ function AuthForm({ mode }) {
                                 children: [
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {}, void 0, false, {
                                         fileName: "[project]/src/components/AuthForm.tsx",
-                                        lineNumber: 61,
+                                        lineNumber: 68,
                                         columnNumber: 45
                                     }, this),
                                     " MỘT KỸ NĂNG MỚI, MỘT GÓC NHÌN MỚI"
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/AuthForm.tsx",
-                                lineNumber: 61,
+                                lineNumber: 68,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h1", {
@@ -462,27 +470,27 @@ function AuthForm({ mode }) {
                                     "Học theo cách",
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("br", {}, void 0, false, {
                                         fileName: "[project]/src/components/AuthForm.tsx",
-                                        lineNumber: 62,
+                                        lineNumber: 69,
                                         columnNumber: 28
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("em", {
                                         children: "của bạn."
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/AuthForm.tsx",
-                                        lineNumber: 62,
+                                        lineNumber: 69,
                                         columnNumber: 34
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/AuthForm.tsx",
-                                lineNumber: 62,
+                                lineNumber: 69,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                 children: "Những bài học thực tế, những người hướng dẫn tận tâm, và một nhịp học vừa vặn với cuộc sống của bạn."
                             }, void 0, false, {
                                 fileName: "[project]/src/components/AuthForm.tsx",
-                                lineNumber: 63,
+                                lineNumber: 70,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -491,7 +499,7 @@ function AuthForm({ mode }) {
                                 "aria-label": "Không gian học tập sáng tạo"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/AuthForm.tsx",
-                                lineNumber: 64,
+                                lineNumber: 71,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -502,25 +510,25 @@ function AuthForm({ mode }) {
                                         children: "01 — 03"
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/AuthForm.tsx",
-                                        lineNumber: 65,
+                                        lineNumber: 72,
                                         columnNumber: 52
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/AuthForm.tsx",
-                                lineNumber: 65,
+                                lineNumber: 72,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/AuthForm.tsx",
-                        lineNumber: 60,
+                        lineNumber: 67,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/AuthForm.tsx",
-                lineNumber: 58,
+                lineNumber: 65,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("section", {
@@ -536,7 +544,7 @@ function AuthForm({ mode }) {
                                         size: 15
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/AuthForm.tsx",
-                                        lineNumber: 70,
+                                        lineNumber: 77,
                                         columnNumber: 41
                                     }, this),
                                     " ",
@@ -544,14 +552,14 @@ function AuthForm({ mode }) {
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/AuthForm.tsx",
-                                lineNumber: 70,
+                                lineNumber: 77,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
                                 children: text.title
                             }, void 0, false, {
                                 fileName: "[project]/src/components/AuthForm.tsx",
-                                lineNumber: 71,
+                                lineNumber: 78,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -559,7 +567,7 @@ function AuthForm({ mode }) {
                                 children: "Một chút mỗi ngày. Một bước gần hơn với điều bạn muốn."
                             }, void 0, false, {
                                 fileName: "[project]/src/components/AuthForm.tsx",
-                                lineNumber: 72,
+                                lineNumber: 79,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("form", {
@@ -579,13 +587,13 @@ function AuthForm({ mode }) {
                                                 minLength: 2
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/AuthForm.tsx",
-                                                lineNumber: 76,
+                                                lineNumber: 83,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/components/AuthForm.tsx",
-                                        lineNumber: 75,
+                                        lineNumber: 82,
                                         columnNumber: 15
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
@@ -599,7 +607,7 @@ function AuthForm({ mode }) {
                                                         size: 17
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/components/AuthForm.tsx",
-                                                        lineNumber: 80,
+                                                        lineNumber: 87,
                                                         columnNumber: 44
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
@@ -611,19 +619,19 @@ function AuthForm({ mode }) {
                                                         required: true
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/components/AuthForm.tsx",
-                                                        lineNumber: 80,
+                                                        lineNumber: 87,
                                                         columnNumber: 62
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/components/AuthForm.tsx",
-                                                lineNumber: 80,
+                                                lineNumber: 87,
                                                 columnNumber: 15
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/components/AuthForm.tsx",
-                                        lineNumber: 79,
+                                        lineNumber: 86,
                                         columnNumber: 13
                                     }, this),
                                     mode !== "forgot" && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
@@ -643,7 +651,7 @@ function AuthForm({ mode }) {
                                                         minLength: 8
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/components/AuthForm.tsx",
-                                                        lineNumber: 84,
+                                                        lineNumber: 91,
                                                         columnNumber: 46
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -655,30 +663,89 @@ function AuthForm({ mode }) {
                                                             size: 17
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/components/AuthForm.tsx",
-                                                            lineNumber: 84,
+                                                            lineNumber: 91,
                                                             columnNumber: 464
                                                         }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$eye$2e$mjs__$5b$app$2d$client$5d$__$28$ecmascript$29$__$3c$export__default__as__Eye$3e$__["Eye"], {
                                                             size: 17
                                                         }, void 0, false, {
                                                             fileName: "[project]/src/components/AuthForm.tsx",
-                                                            lineNumber: 84,
+                                                            lineNumber: 91,
                                                             columnNumber: 487
                                                         }, this)
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/components/AuthForm.tsx",
-                                                        lineNumber: 84,
+                                                        lineNumber: 91,
                                                         columnNumber: 291
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/components/AuthForm.tsx",
-                                                lineNumber: 84,
+                                                lineNumber: 91,
                                                 columnNumber: 17
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/components/AuthForm.tsx",
-                                        lineNumber: 83,
+                                        lineNumber: 90,
+                                        columnNumber: 15
+                                    }, this),
+                                    (mode === "login" || mode === "register") && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("fieldset", {
+                                        className: "role-field",
+                                        children: [
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("legend", {
+                                                children: [
+                                                    "Vai trò ",
+                                                    mode === "register" ? "tài khoản" : "đăng nhập"
+                                                ]
+                                            }, void 0, true, {
+                                                fileName: "[project]/src/components/AuthForm.tsx",
+                                                lineNumber: 96,
+                                                columnNumber: 17
+                                            }, this),
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
+                                                children: [
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
+                                                        type: "radio",
+                                                        name: "account-role",
+                                                        value: "STUDENT",
+                                                        checked: role === "STUDENT",
+                                                        onChange: ()=>setRole("STUDENT")
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/src/components/AuthForm.tsx",
+                                                        lineNumber: 97,
+                                                        columnNumber: 24
+                                                    }, this),
+                                                    " Học sinh"
+                                                ]
+                                            }, void 0, true, {
+                                                fileName: "[project]/src/components/AuthForm.tsx",
+                                                lineNumber: 97,
+                                                columnNumber: 17
+                                            }, this),
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
+                                                children: [
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
+                                                        type: "radio",
+                                                        name: "account-role",
+                                                        value: "INSTRUCTOR",
+                                                        checked: role === "INSTRUCTOR",
+                                                        onChange: ()=>setRole("INSTRUCTOR")
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/src/components/AuthForm.tsx",
+                                                        lineNumber: 98,
+                                                        columnNumber: 24
+                                                    }, this),
+                                                    " Giảng viên / giáo viên"
+                                                ]
+                                            }, void 0, true, {
+                                                fileName: "[project]/src/components/AuthForm.tsx",
+                                                lineNumber: 98,
+                                                columnNumber: 17
+                                            }, this)
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "[project]/src/components/AuthForm.tsx",
+                                        lineNumber: 95,
                                         columnNumber: 15
                                     }, this),
                                     mode === "login" && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
@@ -687,7 +754,7 @@ function AuthForm({ mode }) {
                                         children: "Quên mật khẩu?"
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/AuthForm.tsx",
-                                        lineNumber: 87,
+                                        lineNumber: 101,
                                         columnNumber: 34
                                     }, this),
                                     error && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -696,7 +763,7 @@ function AuthForm({ mode }) {
                                         children: error
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/AuthForm.tsx",
-                                        lineNumber: 88,
+                                        lineNumber: 102,
                                         columnNumber: 23
                                     }, this),
                                     message && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -705,7 +772,7 @@ function AuthForm({ mode }) {
                                         children: message
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/AuthForm.tsx",
-                                        lineNumber: 89,
+                                        lineNumber: 103,
                                         columnNumber: 25
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -718,19 +785,19 @@ function AuthForm({ mode }) {
                                                 size: 17
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/AuthForm.tsx",
-                                                lineNumber: 90,
+                                                lineNumber: 104,
                                                 columnNumber: 117
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/components/AuthForm.tsx",
-                                        lineNumber: 90,
+                                        lineNumber: 104,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/AuthForm.tsx",
-                                lineNumber: 73,
+                                lineNumber: 80,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -743,13 +810,13 @@ function AuthForm({ mode }) {
                                         children: text.link
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/AuthForm.tsx",
-                                        lineNumber: 92,
+                                        lineNumber: 106,
                                         columnNumber: 54
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/AuthForm.tsx",
-                                lineNumber: 92,
+                                lineNumber: 106,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -757,13 +824,13 @@ function AuthForm({ mode }) {
                                 children: "Bằng việc tiếp tục, bạn đồng ý với Điều khoản sử dụng và Chính sách quyền riêng tư."
                             }, void 0, false, {
                                 fileName: "[project]/src/components/AuthForm.tsx",
-                                lineNumber: 93,
+                                lineNumber: 107,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/AuthForm.tsx",
-                        lineNumber: 69,
+                        lineNumber: 76,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -774,29 +841,29 @@ function AuthForm({ mode }) {
                                 children: "HỌC ĐIỀU MÌNH MUỐN"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/AuthForm.tsx",
-                                lineNumber: 95,
+                                lineNumber: 109,
                                 columnNumber: 50
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/AuthForm.tsx",
-                        lineNumber: 95,
+                        lineNumber: 109,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/AuthForm.tsx",
-                lineNumber: 68,
+                lineNumber: 75,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/components/AuthForm.tsx",
-        lineNumber: 57,
+        lineNumber: 64,
         columnNumber: 5
     }, this);
 }
-_s(AuthForm, "pS3qRUYtu04ZlYTCiMmDWS4NBS8=", false, function() {
+_s(AuthForm, "73esznuWdSLjKha6xoGdHk345O8=", false, function() {
     return [
         __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useRouter"]
     ];

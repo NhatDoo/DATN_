@@ -22,6 +22,20 @@
       }
     }
   },
+  "/about": {
+    "hints": 49216,
+    "slots": {
+      "children": {
+        "hints": 49248,
+        "slots": {
+          "children": {
+            "hints": 49312,
+            "slots": null
+          }
+        }
+      }
+    }
+  },
   "/courses/[courseId]": {
     "hints": 49216,
     "slots": {
@@ -41,6 +55,20 @@
       }
     }
   },
+  "/feedback": {
+    "hints": 49216,
+    "slots": {
+      "children": {
+        "hints": 49248,
+        "slots": {
+          "children": {
+            "hints": 49312,
+            "slots": null
+          }
+        }
+      }
+    }
+  },
   "/forgot-password": {
     "hints": 49216,
     "slots": {
@@ -55,7 +83,35 @@
       }
     }
   },
+  "/instructor": {
+    "hints": 49216,
+    "slots": {
+      "children": {
+        "hints": 49248,
+        "slots": {
+          "children": {
+            "hints": 49312,
+            "slots": null
+          }
+        }
+      }
+    }
+  },
   "/login": {
+    "hints": 49216,
+    "slots": {
+      "children": {
+        "hints": 49248,
+        "slots": {
+          "children": {
+            "hints": 49312,
+            "slots": null
+          }
+        }
+      }
+    }
+  },
+  "/my-courses": {
     "hints": 49216,
     "slots": {
       "children": {
@@ -98,6 +154,20 @@
     }
   },
   "/register": {
+    "hints": 49216,
+    "slots": {
+      "children": {
+        "hints": 49248,
+        "slots": {
+          "children": {
+            "hints": 49312,
+            "slots": null
+          }
+        }
+      }
+    }
+  },
+  "/statistics": {
     "hints": 49216,
     "slots": {
       "children": {

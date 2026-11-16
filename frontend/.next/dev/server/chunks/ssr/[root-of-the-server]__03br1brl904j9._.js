@@ -16,8 +16,8 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$re
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$badge$2d$check$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__BadgeCheck$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/badge-check.mjs [app-ssr] (ecmascript) <export default as BadgeCheck>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$book$2d$open$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__BookOpen$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/book-open.mjs [app-ssr] (ecmascript) <export default as BookOpen>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$check$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Check$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/check.mjs [app-ssr] (ecmascript) <export default as Check>");
-var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$chevron$2d$down$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__ChevronDown$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/chevron-down.mjs [app-ssr] (ecmascript) <export default as ChevronDown>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$clock$2d$3$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Clock3$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/clock-3.mjs [app-ssr] (ecmascript) <export default as Clock3>");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$download$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Download$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/download.mjs [app-ssr] (ecmascript) <export default as Download>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$lock$2d$keyhole$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__LockKeyhole$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/lock-keyhole.mjs [app-ssr] (ecmascript) <export default as LockKeyhole>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$play$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Play$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/play.mjs [app-ssr] (ecmascript) <export default as Play>");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$shield$2d$check$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__ShieldCheck$3e$__ = __turbopack_context__.i("[project]/node_modules/lucide-react/dist/esm/icons/shield-check.mjs [app-ssr] (ecmascript) <export default as ShieldCheck>");
@@ -35,68 +35,161 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$courses$2e$ts_
 ;
 const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "/api/v1";
 const priceText = (price)=>new Intl.NumberFormat("vi-VN").format(price) + "đ";
+let clockNow = Date.now();
 const subscribeToClock = (callback)=>{
-    const timer = window.setInterval(callback, 15_000);
+    const timer = window.setInterval(()=>{
+        clockNow = Date.now();
+        callback();
+    }, 15_000);
     return ()=>window.clearInterval(timer);
 };
+const getClockSnapshot = ()=>clockNow;
+const getServerClockSnapshot = ()=>0;
+const emptyCourse = (id)=>({
+        id,
+        slug: id,
+        title: "",
+        category: "",
+        instructor: "",
+        rating: 0,
+        students: "",
+        price: 0,
+        hours: "—",
+        level: "",
+        description: "",
+        thumbnail: "",
+        accent: "",
+        lessons: []
+    });
 function CourseDetail() {
     const params = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useParams"])();
     const courseId = params.courseId;
     const router = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useRouter"])();
-    const fallback = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useMemo"])(()=>__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$courses$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["courses"].find((course)=>course.slug === courseId || course.id === courseId) ?? __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$courses$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["courses"][0], [
-        courseId
-    ]);
+    const search = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$navigation$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useSearchParams"])();
     const [remoteCourse, setRemoteCourse] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(null);
     const [selectedLessonId, setSelectedLessonId] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(null);
-    const course = remoteCourse?.routeId === courseId ? remoteCourse.course : fallback;
-    const selectedLesson = course.lessons.find((lesson)=>lesson.id === selectedLessonId) ?? course.lessons[0];
+    const [courseStatus, setCourseStatus] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(null);
+    const course = remoteCourse?.routeId === courseId ? remoteCourse.course : emptyCourse(courseId);
+    const selectedLesson = course.lessons.find((lesson)=>lesson.id === selectedLessonId) ?? course.lessons.find((lesson)=>lesson.id === search.get("lessonId")) ?? null;
     const [access, setAccess] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(null);
     const courseAccess = access?.routeId === courseId ? access : null;
     const hasAccess = courseAccess?.hasAccess ?? false;
-    const now = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useSyncExternalStore"])(subscribeToClock, Date.now, ()=>0);
+    const now = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useSyncExternalStore"])(subscribeToClock, getClockSnapshot, getServerClockSnapshot);
     const [showPurchase, setShowPurchase] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(false);
     const [notice, setNotice] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])("");
     const [error, setError] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])("");
     const [processing, setProcessing] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(false);
+    const [reviews, setReviews] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])([]);
+    const [ownReview, setOwnReview] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(null);
+    const [materials, setMaterials] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])([]);
+    const [reviewRating, setReviewRating] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(5);
+    const [reviewComment, setReviewComment] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])("");
+    const [reviewError, setReviewError] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])("");
+    const [reviewNotice, setReviewNotice] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])("");
+    const [reviewProcessing, setReviewProcessing] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(false);
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useEffect"])(()=>{
+        let active = true;
         const token = localStorage.getItem("hocmo_access_token");
         fetch(`${apiUrl}/courses/${courseId}`, {
             headers: token ? {
                 Authorization: `Bearer ${token}`
             } : undefined
-        }).then((response)=>response.ok ? response.json() : Promise.reject()).then((data)=>{
+        }).then(async (response)=>{
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.message || "Không thể tải khóa học.");
+            return data;
+        }).then((data)=>{
+            if (!active) return;
             const lessons = (data.sections ?? []).flatMap((section)=>(section.lessons ?? []).map((lesson)=>({
                         id: String(lesson.id),
                         title: String(lesson.title),
                         duration: formatDuration(Number(lesson.durationSec ?? 0)),
-                        videoUrl: typeof lesson.videoUrl === "string" ? lesson.videoUrl : undefined
+                        hasVideo: Boolean(lesson.hasVideo)
                     })));
             const remoteCourse = {
-                ...fallback,
-                id: String(data.id),
-                slug: String(data.id),
-                title: data.title ?? fallback.title,
-                description: data.description ?? fallback.description,
-                price: Number(data.price ?? fallback.price),
-                thumbnail: data.thumbnail ?? fallback.thumbnail,
-                instructor: data.instructor?.name ?? fallback.instructor,
-                lessons: lessons.length ? lessons : fallback.lessons
+                ...(0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$courses$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["courseFromApi"])(data),
+                lessons
             };
             setRemoteCourse({
                 routeId: courseId,
                 course: remoteCourse
             });
-            setSelectedLessonId(remoteCourse.lessons[0]?.id ?? null);
+            const requestedLessonId = search.get("lessonId");
+            setSelectedLessonId(remoteCourse.lessons.find((lesson)=>lesson.id === requestedLessonId)?.id ?? remoteCourse.lessons[0]?.id ?? null);
             setAccess({
                 routeId: courseId,
                 hasAccess: Boolean(data.hasAccess),
                 refundExpiresAt: data.refundExpiresAt ?? null,
-                transactionRef: data.transactionRef ?? null
+                transactionRef: data.transactionRef ?? null,
+                paymentStatus: data.paymentStatus ?? null
             });
-        }).catch(()=>undefined);
+            const currentReview = data.ownReview ?? null;
+            setReviews(Array.isArray(data.reviews) ? data.reviews : []);
+            setOwnReview(currentReview);
+            setReviewRating(currentReview?.rating ?? 5);
+            setReviewComment(currentReview?.comment ?? "");
+            setMaterials(Array.isArray(data.materials) ? data.materials : []);
+            setCourseStatus({
+                routeId: courseId,
+                error: ""
+            });
+        }).catch((requestError)=>{
+            if (active) {
+                setCourseStatus({
+                    routeId: courseId,
+                    error: requestError instanceof Error ? requestError.message : "Không thể kết nối máy chủ."
+                });
+            }
+        });
+        return ()=>{
+            active = false;
+        };
     }, [
         courseId,
-        fallback
+        search
+    ]);
+    (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useEffect"])(()=>{
+        if (!hasAccess || !selectedLesson?.hasVideo || selectedLesson.videoUrl) return;
+        const token = localStorage.getItem("hocmo_access_token");
+        if (!token) return;
+        let active = true;
+        fetch(`${apiUrl}/media/lessons/${selectedLesson.id}/playback`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            },
+            cache: "no-store"
+        }).then(async (response)=>{
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.message || "Không thể mở video bài học.");
+            return result;
+        }).then(({ url })=>{
+            if (!active) return;
+            const apiOrigin = apiUrl.startsWith("http") ? apiUrl : window.location.origin;
+            const videoUrl = new URL(url, apiOrigin).toString();
+            setRemoteCourse((current)=>current?.routeId !== courseId ? current : {
+                    ...current,
+                    course: {
+                        ...current.course,
+                        lessons: current.course.lessons.map((lesson)=>lesson.id === selectedLesson.id ? {
+                                ...lesson,
+                                videoUrl
+                            } : lesson)
+                    }
+                });
+        }).catch((requestError)=>{
+            if (active) {
+                setError(requestError instanceof Error ? requestError.message : "Không thể mở video.");
+            }
+        });
+        return ()=>{
+            active = false;
+        };
+    }, [
+        courseId,
+        hasAccess,
+        selectedLesson?.hasVideo,
+        selectedLesson?.id,
+        selectedLesson?.videoUrl
     ]);
     async function startCheckout() {
         const token = localStorage.getItem("hocmo_access_token");
@@ -107,6 +200,30 @@ function CourseDetail() {
         setProcessing(true);
         setError("");
         try {
+            if (course.price <= 0) {
+                const response = await fetch(`${apiUrl}/learning/enrollments`, {
+                    method: "POST",
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        courseId: course.id
+                    })
+                });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.message || "Không thể đăng ký khóa học.");
+                setAccess({
+                    routeId: courseId,
+                    hasAccess: true,
+                    refundExpiresAt: null,
+                    transactionRef: null,
+                    paymentStatus: null
+                });
+                setShowPurchase(false);
+                setNotice("Đăng ký thành công. Bạn có thể bắt đầu học ngay.");
+                return;
+            }
             const response = await fetch(`${apiUrl}/payments/courses/${course.id}/checkout`, {
                 method: "POST",
                 headers: {
@@ -134,21 +251,178 @@ function CourseDetail() {
                 }
             });
             const result = await response.json();
-            if (!response.ok) throw new Error(result.message || "Không thể xử lý yêu cầu hoàn tiền.");
+            if (!response.ok) {
+                if (response.status === 409 && result.message === "A refund is already being processed") {
+                    setAccess({
+                        ...courseAccess,
+                        paymentStatus: "REFUND_PENDING"
+                    });
+                }
+                throw new Error(result.message || "Không thể xử lý yêu cầu hoàn tiền.");
+            }
+            if (result.status !== "REFUNDED") {
+                throw new Error("VNPAY chưa xác nhận hoàn tiền. Quyền truy cập vẫn được giữ nguyên.");
+            }
             setAccess({
                 routeId: courseId,
                 hasAccess: false,
                 refundExpiresAt: null,
-                transactionRef: courseAccess.transactionRef
+                transactionRef: null,
+                paymentStatus: null
             });
-            setNotice("Đã gửi yêu cầu hoàn tiền thành công.");
+            setMaterials([]);
+            setRemoteCourse((current)=>current?.routeId !== courseId ? current : {
+                    ...current,
+                    course: {
+                        ...current.course,
+                        lessons: current.course.lessons.map((lesson)=>({
+                                ...lesson,
+                                videoUrl: undefined
+                            }))
+                    }
+                });
+            setNotice("Hoàn tiền thành công. Quyền truy cập đã được gỡ; bạn có thể mua lại khóa học bất cứ lúc nào.");
         } catch (requestError) {
             setError(requestError instanceof Error ? requestError.message : "Không thể kết nối máy chủ.");
         } finally{
             setProcessing(false);
         }
     }
+    async function submitReview(event) {
+        event.preventDefault();
+        const token = localStorage.getItem("hocmo_access_token");
+        if (!token) {
+            setReviewError("Vui lòng đăng nhập để gửi đánh giá.");
+            return;
+        }
+        setReviewProcessing(true);
+        setReviewError("");
+        setReviewNotice("");
+        try {
+            const response = await fetch(`${apiUrl}/courses/${course.id}/reviews`, {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    rating: reviewRating,
+                    comment: reviewComment.trim()
+                })
+            });
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.message || "Không thể gửi đánh giá.");
+            const review = result;
+            const currentCount = course.reviewCount ?? 0;
+            const nextCount = ownReview ? currentCount : currentCount + 1;
+            const nextRating = nextCount > 0 ? (course.rating * currentCount - (ownReview?.rating ?? 0) + review.rating) / nextCount : review.rating;
+            setRemoteCourse((current)=>current?.routeId !== courseId ? current : {
+                    ...current,
+                    course: {
+                        ...current.course,
+                        rating: Math.round(nextRating * 10) / 10,
+                        reviewCount: nextCount
+                    }
+                });
+            setOwnReview(review);
+            setReviews((current)=>[
+                    review,
+                    ...current.filter(({ id })=>id !== review.id)
+                ].slice(0, 50));
+            setReviewNotice("Cảm ơn bạn đã chia sẻ đánh giá.");
+        } catch (requestError) {
+            setReviewError(requestError instanceof Error ? requestError.message : "Không thể kết nối máy chủ.");
+        } finally{
+            setReviewProcessing(false);
+        }
+    }
+    async function downloadMaterial(material) {
+        const token = localStorage.getItem("hocmo_access_token");
+        if (!token) {
+            setError("Vui lòng đăng nhập và đăng ký khóa học để tải tài liệu.");
+            return;
+        }
+        setError("");
+        try {
+            const response = await fetch(`${apiUrl}/media/course-materials/${material.id}/download`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            if (!response.ok) {
+                const result = await response.json().catch(()=>({}));
+                throw new Error(result.message || "Không thể tải tài liệu.");
+            }
+            const url = URL.createObjectURL(await response.blob());
+            const anchor = document.createElement("a");
+            anchor.href = url;
+            anchor.download = material.originalName;
+            anchor.click();
+            window.setTimeout(()=>URL.revokeObjectURL(url), 1000);
+        } catch (requestError) {
+            setError(requestError instanceof Error ? requestError.message : "Không thể tải tài liệu.");
+        }
+    }
     const refundAllowed = Boolean(courseAccess?.refundExpiresAt && now <= new Date(courseAccess.refundExpiresAt).getTime());
+    function refreshPlayback() {
+        if (!selectedLesson) return;
+        setRemoteCourse((current)=>current?.routeId !== courseId ? current : {
+                ...current,
+                course: {
+                    ...current.course,
+                    lessons: current.course.lessons.map((lesson)=>lesson.id === selectedLesson.id ? {
+                            ...lesson,
+                            videoUrl: undefined
+                        } : lesson)
+                }
+            });
+        setError("");
+    }
+    const refundTimeLeft = courseAccess?.refundExpiresAt ? formatRemainingTime(new Date(courseAccess.refundExpiresAt).getTime() - now) : null;
+    const currentCourseStatus = courseStatus?.routeId === courseId ? courseStatus : null;
+    if (!currentCourseStatus && remoteCourse?.routeId !== courseId) {
+        return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("main", {
+            className: "detail-loading",
+            children: "Đang tải khóa học…"
+        }, void 0, false, {
+            fileName: "[project]/src/components/CourseDetail.tsx",
+            lineNumber: 369,
+            columnNumber: 12
+        }, this);
+    }
+    if (currentCourseStatus?.error || remoteCourse?.routeId !== courseId) {
+        return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("main", {
+            className: "detail-loading",
+            role: "alert",
+            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                children: [
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                        children: currentCourseStatus?.error || "Không tìm thấy khóa học."
+                    }, void 0, false, {
+                        fileName: "[project]/src/components/CourseDetail.tsx",
+                        lineNumber: 375,
+                        columnNumber: 11
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"], {
+                        href: "/",
+                        children: "Quay lại danh sách khóa học"
+                    }, void 0, false, {
+                        fileName: "[project]/src/components/CourseDetail.tsx",
+                        lineNumber: 376,
+                        columnNumber: 11
+                    }, this)
+                ]
+            }, void 0, true, {
+                fileName: "[project]/src/components/CourseDetail.tsx",
+                lineNumber: 374,
+                columnNumber: 9
+            }, this)
+        }, void 0, false, {
+            fileName: "[project]/src/components/CourseDetail.tsx",
+            lineNumber: 373,
+            columnNumber: 7
+        }, this);
+    }
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("main", {
         className: "detail-page",
         children: [
@@ -162,34 +436,34 @@ function CourseDetail() {
                                 size: 16
                             }, void 0, false, {
                                 fileName: "[project]/src/components/CourseDetail.tsx",
-                                lineNumber: 132,
+                                lineNumber: 384,
                                 columnNumber: 57
                             }, this),
                             " Khám phá"
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/CourseDetail.tsx",
-                        lineNumber: 132,
+                        lineNumber: 384,
                         columnNumber: 42
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                         children: "/"
                     }, void 0, false, {
                         fileName: "[project]/src/components/CourseDetail.tsx",
-                        lineNumber: 132,
+                        lineNumber: 384,
                         columnNumber: 96
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                         children: course.category
                     }, void 0, false, {
                         fileName: "[project]/src/components/CourseDetail.tsx",
-                        lineNumber: 132,
+                        lineNumber: 384,
                         columnNumber: 110
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/CourseDetail.tsx",
-                lineNumber: 132,
+                lineNumber: 384,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("section", {
@@ -207,7 +481,7 @@ function CourseDetail() {
                                         children: "·"
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/CourseDetail.tsx",
-                                        lineNumber: 135,
+                                        lineNumber: 387,
                                         columnNumber: 62
                                     }, this),
                                     " ",
@@ -215,21 +489,21 @@ function CourseDetail() {
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/CourseDetail.tsx",
-                                lineNumber: 135,
+                                lineNumber: 387,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h1", {
                                 children: course.title
                             }, void 0, false, {
                                 fileName: "[project]/src/components/CourseDetail.tsx",
-                                lineNumber: 136,
+                                lineNumber: 388,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                 children: course.description
                             }, void 0, false, {
                                 fileName: "[project]/src/components/CourseDetail.tsx",
-                                lineNumber: 137,
+                                lineNumber: 389,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -240,7 +514,7 @@ function CourseDetail() {
                                         children: course.instructor.split(" ").map((part)=>part[0]).slice(-2).join("")
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/CourseDetail.tsx",
-                                        lineNumber: 138,
+                                        lineNumber: 390,
                                         columnNumber: 46
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -250,40 +524,40 @@ function CourseDetail() {
                                                 children: course.instructor
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/CourseDetail.tsx",
-                                                lineNumber: 138,
+                                                lineNumber: 390,
                                                 columnNumber: 178
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/components/CourseDetail.tsx",
-                                        lineNumber: 138,
+                                        lineNumber: 390,
                                         columnNumber: 161
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$badge$2d$check$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__BadgeCheck$3e$__["BadgeCheck"], {
                                         size: 17
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/CourseDetail.tsx",
-                                        lineNumber: 138,
+                                        lineNumber: 390,
                                         columnNumber: 221
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/CourseDetail.tsx",
-                                lineNumber: 138,
+                                lineNumber: 390,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                 className: "detail-stats",
                                 children: [
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                    course.rating > 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                         children: [
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$star$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Star$3e$__["Star"], {
                                                 size: 16,
                                                 fill: "currentColor"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/CourseDetail.tsx",
-                                                lineNumber: 139,
-                                                columnNumber: 47
+                                                lineNumber: 391,
+                                                columnNumber: 69
                                             }, this),
                                             " ",
                                             course.rating,
@@ -291,19 +565,19 @@ function CourseDetail() {
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("small", {
                                                 children: [
                                                     "(",
-                                                    course.students,
-                                                    " học viên)"
+                                                    course.reviewCount ?? 0,
+                                                    " đánh giá)"
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/components/CourseDetail.tsx",
-                                                lineNumber: 139,
-                                                columnNumber: 102
+                                                lineNumber: 391,
+                                                columnNumber: 124
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/components/CourseDetail.tsx",
-                                        lineNumber: 139,
-                                        columnNumber: 41
+                                        lineNumber: 391,
+                                        columnNumber: 63
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                         children: [
@@ -311,16 +585,16 @@ function CourseDetail() {
                                                 size: 16
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/CourseDetail.tsx",
-                                                lineNumber: 139,
-                                                columnNumber: 158
+                                                lineNumber: 391,
+                                                columnNumber: 189
                                             }, this),
                                             " ",
                                             course.hours
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/components/CourseDetail.tsx",
-                                        lineNumber: 139,
-                                        columnNumber: 152
+                                        lineNumber: 391,
+                                        columnNumber: 183
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                         children: [
@@ -328,8 +602,8 @@ function CourseDetail() {
                                                 size: 16
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/CourseDetail.tsx",
-                                                lineNumber: 139,
-                                                columnNumber: 206
+                                                lineNumber: 391,
+                                                columnNumber: 237
                                             }, this),
                                             " ",
                                             course.lessons.length,
@@ -337,19 +611,19 @@ function CourseDetail() {
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/components/CourseDetail.tsx",
-                                        lineNumber: 139,
-                                        columnNumber: 200
+                                        lineNumber: 391,
+                                        columnNumber: 231
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/CourseDetail.tsx",
-                                lineNumber: 139,
+                                lineNumber: 391,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/CourseDetail.tsx",
-                        lineNumber: 134,
+                        lineNumber: 386,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -360,18 +634,18 @@ function CourseDetail() {
                                 role: "img",
                                 "aria-label": course.title,
                                 style: {
-                                    backgroundImage: `url("${course.thumbnail}")`
+                                    backgroundImage: `url("${(0, __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$lib$2f$courses$2e$ts__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["resolveApiAssetUrl"])(course.thumbnail)}")`
                                 },
                                 children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                     children: course.category
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/CourseDetail.tsx",
-                                    lineNumber: 142,
-                                    columnNumber: 136
+                                    lineNumber: 394,
+                                    columnNumber: 156
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/src/components/CourseDetail.tsx",
-                                lineNumber: 142,
+                                lineNumber: 394,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -384,21 +658,21 @@ function CourseDetail() {
                                                 size: 16
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/CourseDetail.tsx",
-                                                lineNumber: 144,
+                                                lineNumber: 396,
                                                 columnNumber: 55
                                             }, this),
                                             " BẠN ĐÃ ĐĂNG KÝ KHÓA HỌC"
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/components/CourseDetail.tsx",
-                                        lineNumber: 144,
+                                        lineNumber: 396,
                                         columnNumber: 26
                                     }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                         className: "price-label",
                                         children: "GIÁ TRỌN ĐỜI"
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/CourseDetail.tsx",
-                                        lineNumber: 144,
+                                        lineNumber: 396,
                                         columnNumber: 107
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -406,37 +680,58 @@ function CourseDetail() {
                                         children: hasAccess ? "Đã mở khóa" : priceText(course.price)
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/CourseDetail.tsx",
-                                        lineNumber: 145,
+                                        lineNumber: 397,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                                         className: hasAccess ? "buy-button owned" : "buy-button",
                                         onClick: ()=>hasAccess ? setNotice("Bạn đã có quyền truy cập khóa học này.") : setShowPurchase(true),
                                         children: [
-                                            hasAccess ? "Tiếp tục học" : "Mua khóa học",
+                                            hasAccess ? "Tiếp tục học" : course.price > 0 ? "Mua khóa học" : "Đăng ký miễn phí",
                                             " ",
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$arrow$2d$up$2d$right$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__ArrowUpRight$3e$__["ArrowUpRight"], {
                                                 size: 17
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/CourseDetail.tsx",
-                                                lineNumber: 147,
-                                                columnNumber: 61
+                                                lineNumber: 399,
+                                                columnNumber: 101
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/components/CourseDetail.tsx",
-                                        lineNumber: 146,
+                                        lineNumber: 398,
                                         columnNumber: 13
                                     }, this),
-                                    refundAllowed && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                    refundAllowed && courseAccess?.paymentStatus === "REFUND_PENDING" && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                        className: "refund-countdown",
+                                        role: "status",
+                                        children: "Yêu cầu hoàn tiền đang được xử lý. Vui lòng không gửi lại."
+                                    }, void 0, false, {
+                                        fileName: "[project]/src/components/CourseDetail.tsx",
+                                        lineNumber: 402,
+                                        columnNumber: 15
+                                    }, this),
+                                    refundAllowed && courseAccess?.paymentStatus === "PAID" && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
                                         className: "refund-button",
                                         disabled: processing,
                                         onClick: requestRefund,
                                         children: "Hoàn tiền khóa học"
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/CourseDetail.tsx",
-                                        lineNumber: 149,
-                                        columnNumber: 31
+                                        lineNumber: 404,
+                                        columnNumber: 73
+                                    }, this),
+                                    refundAllowed && courseAccess?.paymentStatus === "PAID" && refundTimeLeft && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                        className: "refund-countdown",
+                                        children: [
+                                            "Còn ",
+                                            refundTimeLeft,
+                                            " để yêu cầu hoàn tiền (2 giờ từ lúc đăng ký)."
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "[project]/src/components/CourseDetail.tsx",
+                                        lineNumber: 405,
+                                        columnNumber: 91
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                         className: "buy-trust",
@@ -445,14 +740,14 @@ function CourseDetail() {
                                                 size: 16
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/CourseDetail.tsx",
-                                                lineNumber: 150,
+                                                lineNumber: 406,
                                                 columnNumber: 40
                                             }, this),
                                             " Truy cập không giới hạn sau khi mua"
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/components/CourseDetail.tsx",
-                                        lineNumber: 150,
+                                        lineNumber: 406,
                                         columnNumber: 13
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -462,32 +757,32 @@ function CourseDetail() {
                                                 size: 16
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/CourseDetail.tsx",
-                                                lineNumber: 151,
+                                                lineNumber: 407,
                                                 columnNumber: 40
                                             }, this),
                                             " Học theo tiến độ của riêng bạn"
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/components/CourseDetail.tsx",
-                                        lineNumber: 151,
+                                        lineNumber: 407,
                                         columnNumber: 13
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/CourseDetail.tsx",
-                                lineNumber: 143,
+                                lineNumber: 395,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/CourseDetail.tsx",
-                        lineNumber: 141,
+                        lineNumber: 393,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/CourseDetail.tsx",
-                lineNumber: 133,
+                lineNumber: 385,
                 columnNumber: 7
             }, this),
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("section", {
@@ -506,20 +801,20 @@ function CourseDetail() {
                                                 children: "NỘI DUNG KHÓA HỌC"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/CourseDetail.tsx",
-                                                lineNumber: 158,
+                                                lineNumber: 414,
                                                 columnNumber: 49
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
                                                 children: "Những gì bạn sẽ học"
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/CourseDetail.tsx",
-                                                lineNumber: 158,
+                                                lineNumber: 414,
                                                 columnNumber: 99
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/components/CourseDetail.tsx",
-                                        lineNumber: 158,
+                                        lineNumber: 414,
                                         columnNumber: 44
                                     }, this),
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -530,116 +825,91 @@ function CourseDetail() {
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/components/CourseDetail.tsx",
-                                        lineNumber: 158,
+                                        lineNumber: 414,
                                         columnNumber: 133
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/CourseDetail.tsx",
-                                lineNumber: 158,
+                                lineNumber: 414,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                 className: "lesson-list",
-                                children: [
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                        className: "lesson-list-head",
+                                children: course.lessons.length ? course.lessons.map((lesson, index)=>{
+                                    const isSelected = selectedLesson?.id === lesson.id;
+                                    return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                        className: isSelected ? "lesson-row selected" : "lesson-row",
+                                        onClick: ()=>{
+                                            setSelectedLessonId(lesson.id);
+                                            setNotice("");
+                                        },
                                         children: [
-                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("strong", {
-                                                children: "Chương 01"
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                className: "lesson-play",
+                                                children: hasAccess ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$play$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Play$3e$__["Play"], {
+                                                    size: 14
+                                                }, void 0, false, {
+                                                    fileName: "[project]/src/components/CourseDetail.tsx",
+                                                    lineNumber: 420,
+                                                    columnNumber: 62
+                                                }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$lock$2d$keyhole$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__LockKeyhole$3e$__["LockKeyhole"], {
+                                                    size: 14
+                                                }, void 0, false, {
+                                                    fileName: "[project]/src/components/CourseDetail.tsx",
+                                                    lineNumber: 420,
+                                                    columnNumber: 83
+                                                }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/CourseDetail.tsx",
-                                                lineNumber: 160,
-                                                columnNumber: 47
+                                                lineNumber: 420,
+                                                columnNumber: 19
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                children: "Nền tảng và tư duy"
-                                            }, void 0, false, {
+                                                className: "lesson-row-title",
+                                                children: [
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("small", {
+                                                        children: String(index + 1).padStart(2, "0")
+                                                    }, void 0, false, {
+                                                        fileName: "[project]/src/components/CourseDetail.tsx",
+                                                        lineNumber: 421,
+                                                        columnNumber: 54
+                                                    }, this),
+                                                    lesson.title
+                                                ]
+                                            }, void 0, true, {
                                                 fileName: "[project]/src/components/CourseDetail.tsx",
-                                                lineNumber: 160,
-                                                columnNumber: 73
+                                                lineNumber: 421,
+                                                columnNumber: 19
                                             }, this),
-                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$chevron$2d$down$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__ChevronDown$3e$__["ChevronDown"], {
-                                                size: 17
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                className: "lesson-duration",
+                                                children: lesson.duration
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/CourseDetail.tsx",
-                                                lineNumber: 160,
-                                                columnNumber: 104
+                                                lineNumber: 422,
+                                                columnNumber: 19
                                             }, this)
                                         ]
-                                    }, void 0, true, {
+                                    }, lesson.id, true, {
                                         fileName: "[project]/src/components/CourseDetail.tsx",
-                                        lineNumber: 160,
-                                        columnNumber: 13
-                                    }, this),
-                                    course.lessons.map((lesson, index)=>{
-                                        const isSelected = selectedLesson.id === lesson.id;
-                                        return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                                            className: isSelected ? "lesson-row selected" : "lesson-row",
-                                            onClick: ()=>{
-                                                setSelectedLessonId(lesson.id);
-                                                setNotice("");
-                                            },
-                                            children: [
-                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                    className: "lesson-play",
-                                                    children: hasAccess ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$play$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Play$3e$__["Play"], {
-                                                        size: 14
-                                                    }, void 0, false, {
-                                                        fileName: "[project]/src/components/CourseDetail.tsx",
-                                                        lineNumber: 165,
-                                                        columnNumber: 62
-                                                    }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$lock$2d$keyhole$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__LockKeyhole$3e$__["LockKeyhole"], {
-                                                        size: 14
-                                                    }, void 0, false, {
-                                                        fileName: "[project]/src/components/CourseDetail.tsx",
-                                                        lineNumber: 165,
-                                                        columnNumber: 83
-                                                    }, this)
-                                                }, void 0, false, {
-                                                    fileName: "[project]/src/components/CourseDetail.tsx",
-                                                    lineNumber: 165,
-                                                    columnNumber: 19
-                                                }, this),
-                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                    className: "lesson-row-title",
-                                                    children: [
-                                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("small", {
-                                                            children: String(index + 1).padStart(2, "0")
-                                                        }, void 0, false, {
-                                                            fileName: "[project]/src/components/CourseDetail.tsx",
-                                                            lineNumber: 166,
-                                                            columnNumber: 54
-                                                        }, this),
-                                                        lesson.title
-                                                    ]
-                                                }, void 0, true, {
-                                                    fileName: "[project]/src/components/CourseDetail.tsx",
-                                                    lineNumber: 166,
-                                                    columnNumber: 19
-                                                }, this),
-                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                    className: "lesson-duration",
-                                                    children: lesson.duration
-                                                }, void 0, false, {
-                                                    fileName: "[project]/src/components/CourseDetail.tsx",
-                                                    lineNumber: 167,
-                                                    columnNumber: 19
-                                                }, this)
-                                            ]
-                                        }, lesson.id, true, {
-                                            fileName: "[project]/src/components/CourseDetail.tsx",
-                                            lineNumber: 164,
-                                            columnNumber: 17
-                                        }, this);
-                                    })
-                                ]
-                            }, void 0, true, {
+                                        lineNumber: 419,
+                                        columnNumber: 17
+                                    }, this);
+                                }) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                    className: "instructor-muted",
+                                    children: "Khóa học chưa có bài học."
+                                }, void 0, false, {
+                                    fileName: "[project]/src/components/CourseDetail.tsx",
+                                    lineNumber: 425,
+                                    columnNumber: 18
+                                }, this)
+                            }, void 0, false, {
                                 fileName: "[project]/src/components/CourseDetail.tsx",
-                                lineNumber: 159,
+                                lineNumber: 415,
                                 columnNumber: 11
                             }, this),
-                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            selectedLesson && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                 className: "lesson-player-section",
                                 children: [
                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -654,33 +924,34 @@ function CourseDetail() {
                                                     ]
                                                 }, void 0, true, {
                                                     fileName: "[project]/src/components/CourseDetail.tsx",
-                                                    lineNumber: 173,
+                                                    lineNumber: 428,
                                                     columnNumber: 51
                                                 }, this),
                                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
                                                     children: selectedLesson.title
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/CourseDetail.tsx",
-                                                    lineNumber: 173,
+                                                    lineNumber: 428,
                                                     columnNumber: 161
                                                 }, this)
                                             ]
                                         }, void 0, true, {
                                             fileName: "[project]/src/components/CourseDetail.tsx",
-                                            lineNumber: 173,
+                                            lineNumber: 428,
                                             columnNumber: 46
                                         }, this)
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/CourseDetail.tsx",
-                                        lineNumber: 173,
+                                        lineNumber: 428,
                                         columnNumber: 13
                                     }, this),
                                     hasAccess ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$VideoPlayer$2e$tsx__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["default"], {
                                         src: selectedLesson.videoUrl,
-                                        poster: course.thumbnail
+                                        poster: course.thumbnail,
+                                        onRetry: refreshPlayback
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/CourseDetail.tsx",
-                                        lineNumber: 174,
+                                        lineNumber: 429,
                                         columnNumber: 26
                                     }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                         className: "locked-player",
@@ -694,12 +965,12 @@ function CourseDetail() {
                                                     size: 21
                                                 }, void 0, false, {
                                                     fileName: "[project]/src/components/CourseDetail.tsx",
-                                                    lineNumber: 176,
+                                                    lineNumber: 431,
                                                     columnNumber: 44
                                                 }, this)
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/CourseDetail.tsx",
-                                                lineNumber: 176,
+                                                lineNumber: 431,
                                                 columnNumber: 17
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -708,20 +979,20 @@ function CourseDetail() {
                                                         children: "Nội dung này đang được khóa"
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/components/CourseDetail.tsx",
-                                                        lineNumber: 176,
+                                                        lineNumber: 431,
                                                         columnNumber: 80
                                                     }, this),
                                                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
                                                         children: "Mua khóa học để xem toàn bộ video và tài liệu."
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/components/CourseDetail.tsx",
-                                                        lineNumber: 176,
+                                                        lineNumber: 431,
                                                         columnNumber: 124
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/components/CourseDetail.tsx",
-                                                lineNumber: 176,
+                                                lineNumber: 431,
                                                 columnNumber: 75
                                             }, this),
                                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -732,19 +1003,19 @@ function CourseDetail() {
                                                         size: 16
                                                     }, void 0, false, {
                                                         fileName: "[project]/src/components/CourseDetail.tsx",
-                                                        lineNumber: 176,
+                                                        lineNumber: 431,
                                                         columnNumber: 243
                                                     }, this)
                                                 ]
                                             }, void 0, true, {
                                                 fileName: "[project]/src/components/CourseDetail.tsx",
-                                                lineNumber: 176,
+                                                lineNumber: 431,
                                                 columnNumber: 189
                                             }, this)
                                         ]
                                     }, void 0, true, {
                                         fileName: "[project]/src/components/CourseDetail.tsx",
-                                        lineNumber: 175,
+                                        lineNumber: 430,
                                         columnNumber: 15
                                     }, this),
                                     notice && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -753,7 +1024,7 @@ function CourseDetail() {
                                         children: notice
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/CourseDetail.tsx",
-                                        lineNumber: 179,
+                                        lineNumber: 434,
                                         columnNumber: 24
                                     }, this),
                                     error && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
@@ -762,19 +1033,112 @@ function CourseDetail() {
                                         children: error
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/CourseDetail.tsx",
-                                        lineNumber: 180,
+                                        lineNumber: 435,
                                         columnNumber: 23
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/CourseDetail.tsx",
-                                lineNumber: 172,
-                                columnNumber: 11
+                                lineNumber: 427,
+                                columnNumber: 30
+                            }, this),
+                            materials.length > 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("section", {
+                                className: "course-materials",
+                                "aria-labelledby": "materials-heading",
+                                children: [
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        className: "content-heading",
+                                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                            children: [
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                    className: "eyebrow",
+                                                    children: "TÀI LIỆU HỌC TẬP"
+                                                }, void 0, false, {
+                                                    fileName: "[project]/src/components/CourseDetail.tsx",
+                                                    lineNumber: 438,
+                                                    columnNumber: 51
+                                                }, this),
+                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
+                                                    id: "materials-heading",
+                                                    children: "Tài liệu đính kèm"
+                                                }, void 0, false, {
+                                                    fileName: "[project]/src/components/CourseDetail.tsx",
+                                                    lineNumber: 438,
+                                                    columnNumber: 100
+                                                }, this)
+                                            ]
+                                        }, void 0, true, {
+                                            fileName: "[project]/src/components/CourseDetail.tsx",
+                                            lineNumber: 438,
+                                            columnNumber: 46
+                                        }, this)
+                                    }, void 0, false, {
+                                        fileName: "[project]/src/components/CourseDetail.tsx",
+                                        lineNumber: 438,
+                                        columnNumber: 13
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("ul", {
+                                        children: materials.map((material)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("li", {
+                                                children: [
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                        children: [
+                                                            material.originalName,
+                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("small", {
+                                                                children: [
+                                                                    (material.sizeBytes / 1024 / 1024).toFixed(1),
+                                                                    " MB"
+                                                                ]
+                                                            }, void 0, true, {
+                                                                fileName: "[project]/src/components/CourseDetail.tsx",
+                                                                lineNumber: 441,
+                                                                columnNumber: 46
+                                                            }, this)
+                                                        ]
+                                                    }, void 0, true, {
+                                                        fileName: "[project]/src/components/CourseDetail.tsx",
+                                                        lineNumber: 441,
+                                                        columnNumber: 17
+                                                    }, this),
+                                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                                        type: "button",
+                                                        onClick: ()=>void downloadMaterial(material),
+                                                        "aria-label": `Tải ${material.originalName}`,
+                                                        children: [
+                                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$download$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Download$3e$__["Download"], {
+                                                                size: 16
+                                                            }, void 0, false, {
+                                                                fileName: "[project]/src/components/CourseDetail.tsx",
+                                                                lineNumber: 442,
+                                                                columnNumber: 131
+                                                            }, this),
+                                                            " Tải về"
+                                                        ]
+                                                    }, void 0, true, {
+                                                        fileName: "[project]/src/components/CourseDetail.tsx",
+                                                        lineNumber: 442,
+                                                        columnNumber: 17
+                                                    }, this)
+                                                ]
+                                            }, material.id, true, {
+                                                fileName: "[project]/src/components/CourseDetail.tsx",
+                                                lineNumber: 440,
+                                                columnNumber: 15
+                                            }, this))
+                                    }, void 0, false, {
+                                        fileName: "[project]/src/components/CourseDetail.tsx",
+                                        lineNumber: 439,
+                                        columnNumber: 13
+                                    }, this)
+                                ]
+                            }, void 0, true, {
+                                fileName: "[project]/src/components/CourseDetail.tsx",
+                                lineNumber: 437,
+                                columnNumber: 36
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/CourseDetail.tsx",
-                        lineNumber: 157,
+                        lineNumber: 413,
                         columnNumber: 9
                     }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("aside", {
@@ -785,28 +1149,28 @@ function CourseDetail() {
                                 children: "01 / GIỚI THIỆU"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/CourseDetail.tsx",
-                                lineNumber: 184,
+                                lineNumber: 448,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
                                 children: "Một kỹ năng tốt sẽ ở lại với bạn."
                             }, void 0, false, {
                                 fileName: "[project]/src/components/CourseDetail.tsx",
-                                lineNumber: 185,
+                                lineNumber: 449,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                                 children: course.description
                             }, void 0, false, {
                                 fileName: "[project]/src/components/CourseDetail.tsx",
-                                lineNumber: 186,
+                                lineNumber: 450,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                 className: "aside-divider"
                             }, void 0, false, {
                                 fileName: "[project]/src/components/CourseDetail.tsx",
-                                lineNumber: 187,
+                                lineNumber: 451,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -816,14 +1180,14 @@ function CourseDetail() {
                                         size: 16
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/CourseDetail.tsx",
-                                        lineNumber: 188,
+                                        lineNumber: 452,
                                         columnNumber: 42
                                     }, this),
                                     " Toàn bộ video bài học"
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/CourseDetail.tsx",
-                                lineNumber: 188,
+                                lineNumber: 452,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -833,14 +1197,14 @@ function CourseDetail() {
                                         size: 16
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/CourseDetail.tsx",
-                                        lineNumber: 189,
+                                        lineNumber: 453,
                                         columnNumber: 42
                                     }, this),
                                     " Cập nhật nội dung mới"
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/CourseDetail.tsx",
-                                lineNumber: 189,
+                                lineNumber: 453,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -850,14 +1214,14 @@ function CourseDetail() {
                                         size: 16
                                     }, void 0, false, {
                                         fileName: "[project]/src/components/CourseDetail.tsx",
-                                        lineNumber: 190,
+                                        lineNumber: 454,
                                         columnNumber: 42
                                     }, this),
                                     " Học trên mọi thiết bị"
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/CourseDetail.tsx",
-                                lineNumber: 190,
+                                lineNumber: 454,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -865,19 +1229,257 @@ function CourseDetail() {
                                 children: "Bài học được mở khóa sau khi hoàn tất mua khóa học."
                             }, void 0, false, {
                                 fileName: "[project]/src/components/CourseDetail.tsx",
-                                lineNumber: 191,
+                                lineNumber: 455,
                                 columnNumber: 11
                             }, this)
                         ]
                     }, void 0, true, {
                         fileName: "[project]/src/components/CourseDetail.tsx",
-                        lineNumber: 183,
+                        lineNumber: 447,
                         columnNumber: 9
                     }, this)
                 ]
             }, void 0, true, {
                 fileName: "[project]/src/components/CourseDetail.tsx",
-                lineNumber: 156,
+                lineNumber: 412,
+                columnNumber: 7
+            }, this),
+            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("section", {
+                className: "course-reviews",
+                "aria-labelledby": "reviews-heading",
+                children: [
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "content-heading",
+                        children: [
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                children: [
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                        className: "eyebrow",
+                                        children: "CẢM NHẬN HỌC VIÊN"
+                                    }, void 0, false, {
+                                        fileName: "[project]/src/components/CourseDetail.tsx",
+                                        lineNumber: 461,
+                                        columnNumber: 16
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
+                                        id: "reviews-heading",
+                                        children: "Đánh giá khóa học"
+                                    }, void 0, false, {
+                                        fileName: "[project]/src/components/CourseDetail.tsx",
+                                        lineNumber: 461,
+                                        columnNumber: 66
+                                    }, this)
+                                ]
+                            }, void 0, true, {
+                                fileName: "[project]/src/components/CourseDetail.tsx",
+                                lineNumber: 461,
+                                columnNumber: 11
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                children: course.rating > 0 ? `${course.rating}/5 · ${course.reviewCount ?? 0} đánh giá` : "Chưa có đánh giá"
+                            }, void 0, false, {
+                                fileName: "[project]/src/components/CourseDetail.tsx",
+                                lineNumber: 462,
+                                columnNumber: 11
+                            }, this)
+                        ]
+                    }, void 0, true, {
+                        fileName: "[project]/src/components/CourseDetail.tsx",
+                        lineNumber: 460,
+                        columnNumber: 9
+                    }, this),
+                    hasAccess ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("form", {
+                        className: "review-form",
+                        onSubmit: (event)=>void submitReview(event),
+                        children: [
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
+                                children: "Chọn số sao"
+                            }, void 0, false, {
+                                fileName: "[project]/src/components/CourseDetail.tsx",
+                                lineNumber: 466,
+                                columnNumber: 13
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                className: "review-stars",
+                                role: "radiogroup",
+                                "aria-label": "Số sao đánh giá",
+                                children: [
+                                    1,
+                                    2,
+                                    3,
+                                    4,
+                                    5
+                                ].map((star)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                        type: "button",
+                                        role: "radio",
+                                        "aria-checked": reviewRating === star,
+                                        "aria-label": `${star} sao`,
+                                        onClick: ()=>setReviewRating(star),
+                                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$star$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Star$3e$__["Star"], {
+                                            size: 22,
+                                            fill: star <= reviewRating ? "currentColor" : "none"
+                                        }, void 0, false, {
+                                            fileName: "[project]/src/components/CourseDetail.tsx",
+                                            lineNumber: 470,
+                                            columnNumber: 19
+                                        }, this)
+                                    }, star, false, {
+                                        fileName: "[project]/src/components/CourseDetail.tsx",
+                                        lineNumber: 469,
+                                        columnNumber: 17
+                                    }, this))
+                            }, void 0, false, {
+                                fileName: "[project]/src/components/CourseDetail.tsx",
+                                lineNumber: 467,
+                                columnNumber: 13
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("label", {
+                                htmlFor: "course-review-comment",
+                                children: "Bình luận của bạn"
+                            }, void 0, false, {
+                                fileName: "[project]/src/components/CourseDetail.tsx",
+                                lineNumber: 474,
+                                columnNumber: 13
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("textarea", {
+                                id: "course-review-comment",
+                                value: reviewComment,
+                                onChange: (event)=>setReviewComment(event.target.value),
+                                minLength: 2,
+                                maxLength: 2000,
+                                required: true,
+                                rows: 4,
+                                placeholder: "Chia sẻ trải nghiệm học tập của bạn…"
+                            }, void 0, false, {
+                                fileName: "[project]/src/components/CourseDetail.tsx",
+                                lineNumber: 475,
+                                columnNumber: 13
+                            }, this),
+                            reviewError && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                className: "purchase-error",
+                                role: "alert",
+                                children: reviewError
+                            }, void 0, false, {
+                                fileName: "[project]/src/components/CourseDetail.tsx",
+                                lineNumber: 476,
+                                columnNumber: 29
+                            }, this),
+                            reviewNotice && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                className: "purchase-notice",
+                                role: "status",
+                                children: reviewNotice
+                            }, void 0, false, {
+                                fileName: "[project]/src/components/CourseDetail.tsx",
+                                lineNumber: 477,
+                                columnNumber: 30
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                className: "buy-button",
+                                type: "submit",
+                                disabled: reviewProcessing,
+                                children: [
+                                    reviewProcessing ? "Đang gửi…" : ownReview ? "Cập nhật đánh giá" : "Gửi đánh giá",
+                                    " ",
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$arrow$2d$up$2d$right$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__ArrowUpRight$3e$__["ArrowUpRight"], {
+                                        size: 17
+                                    }, void 0, false, {
+                                        fileName: "[project]/src/components/CourseDetail.tsx",
+                                        lineNumber: 478,
+                                        columnNumber: 170
+                                    }, this)
+                                ]
+                            }, void 0, true, {
+                                fileName: "[project]/src/components/CourseDetail.tsx",
+                                lineNumber: 478,
+                                columnNumber: 13
+                            }, this)
+                        ]
+                    }, void 0, true, {
+                        fileName: "[project]/src/components/CourseDetail.tsx",
+                        lineNumber: 465,
+                        columnNumber: 11
+                    }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                        className: "review-enrollment-note",
+                        children: "Đăng ký khóa học để gửi đánh giá và bình luận."
+                    }, void 0, false, {
+                        fileName: "[project]/src/components/CourseDetail.tsx",
+                        lineNumber: 480,
+                        columnNumber: 13
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "review-list",
+                        children: reviews.length ? reviews.map((review)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("article", {
+                                className: "review-card",
+                                children: [
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        children: [
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("strong", {
+                                                children: review.user?.name ?? "Học viên"
+                                            }, void 0, false, {
+                                                fileName: "[project]/src/components/CourseDetail.tsx",
+                                                lineNumber: 484,
+                                                columnNumber: 20
+                                            }, this),
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                                children: new Date(review.createdAt).toLocaleDateString("vi-VN")
+                                            }, void 0, false, {
+                                                fileName: "[project]/src/components/CourseDetail.tsx",
+                                                lineNumber: 484,
+                                                columnNumber: 70
+                                            }, this)
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "[project]/src/components/CourseDetail.tsx",
+                                        lineNumber: 484,
+                                        columnNumber: 15
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                        className: "review-card-stars",
+                                        "aria-label": `${review.rating} trên 5 sao`,
+                                        children: Array.from({
+                                            length: 5
+                                        }, (_, index)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$star$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__Star$3e$__["Star"], {
+                                                size: 14,
+                                                fill: index < review.rating ? "currentColor" : "none"
+                                            }, index, false, {
+                                                fileName: "[project]/src/components/CourseDetail.tsx",
+                                                lineNumber: 485,
+                                                columnNumber: 132
+                                            }, this))
+                                    }, void 0, false, {
+                                        fileName: "[project]/src/components/CourseDetail.tsx",
+                                        lineNumber: 485,
+                                        columnNumber: 15
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                        children: review.comment
+                                    }, void 0, false, {
+                                        fileName: "[project]/src/components/CourseDetail.tsx",
+                                        lineNumber: 486,
+                                        columnNumber: 15
+                                    }, this)
+                                ]
+                            }, review.id, true, {
+                                fileName: "[project]/src/components/CourseDetail.tsx",
+                                lineNumber: 483,
+                                columnNumber: 13
+                            }, this)) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                            className: "review-enrollment-note",
+                            children: "Hãy là người đầu tiên đánh giá khóa học này."
+                        }, void 0, false, {
+                            fileName: "[project]/src/components/CourseDetail.tsx",
+                            lineNumber: 488,
+                            columnNumber: 16
+                        }, this)
+                    }, void 0, false, {
+                        fileName: "[project]/src/components/CourseDetail.tsx",
+                        lineNumber: 481,
+                        columnNumber: 9
+                    }, this)
+                ]
+            }, void 0, true, {
+                fileName: "[project]/src/components/CourseDetail.tsx",
+                lineNumber: 459,
                 columnNumber: 7
             }, this),
             showPurchase && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -896,7 +1498,7 @@ function CourseDetail() {
                             children: "XÁC NHẬN ĐĂNG KÝ"
                         }, void 0, false, {
                             fileName: "[project]/src/components/CourseDetail.tsx",
-                            lineNumber: 197,
+                            lineNumber: 494,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -906,7 +1508,7 @@ function CourseDetail() {
                             children: "×"
                         }, void 0, false, {
                             fileName: "[project]/src/components/CourseDetail.tsx",
-                            lineNumber: 197,
+                            lineNumber: 494,
                             columnNumber: 60
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
@@ -914,14 +1516,14 @@ function CourseDetail() {
                             children: "Sẵn sàng bắt đầu?"
                         }, void 0, false, {
                             fileName: "[project]/src/components/CourseDetail.tsx",
-                            lineNumber: 198,
+                            lineNumber: 495,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
                             children: course.title
                         }, void 0, false, {
                             fileName: "[project]/src/components/CourseDetail.tsx",
-                            lineNumber: 198,
+                            lineNumber: 495,
                             columnNumber: 57
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
@@ -929,15 +1531,15 @@ function CourseDetail() {
                             children: priceText(course.price)
                         }, void 0, false, {
                             fileName: "[project]/src/components/CourseDetail.tsx",
-                            lineNumber: 198,
+                            lineNumber: 495,
                             columnNumber: 78
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                             className: "demo-payment-note",
-                            children: "Bạn sẽ được chuyển đến cổng VNPAY Sandbox để thanh toán. Nội dung chỉ mở khóa sau khi giao dịch được xác nhận."
+                            children: course.price > 0 ? "Bạn sẽ được chuyển đến cổng VNPAY Sandbox để thanh toán. Nội dung chỉ mở khóa sau khi giao dịch được xác nhận." : "Khóa học miễn phí. Đăng ký để mở toàn bộ nội dung và bắt đầu học ngay."
                         }, void 0, false, {
                             fileName: "[project]/src/components/CourseDetail.tsx",
-                            lineNumber: 199,
+                            lineNumber: 496,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
@@ -945,42 +1547,49 @@ function CourseDetail() {
                             disabled: processing,
                             onClick: startCheckout,
                             children: [
-                                processing ? "Đang kết nối VNPAY…" : "Thanh toán qua VNPAY",
+                                processing ? "Đang xử lý…" : course.price > 0 ? "Thanh toán qua VNPAY" : "Đăng ký khóa học",
                                 " ",
                                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$react$2f$dist$2f$esm$2f$icons$2f$arrow$2d$up$2d$right$2e$mjs__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__$3c$export__default__as__ArrowUpRight$3e$__["ArrowUpRight"], {
                                     size: 17
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/CourseDetail.tsx",
-                                    lineNumber: 200,
-                                    columnNumber: 150
+                                    lineNumber: 497,
+                                    columnNumber: 182
                                 }, this)
                             ]
                         }, void 0, true, {
                             fileName: "[project]/src/components/CourseDetail.tsx",
-                            lineNumber: 200,
+                            lineNumber: 497,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/CourseDetail.tsx",
-                    lineNumber: 196,
+                    lineNumber: 493,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/src/components/CourseDetail.tsx",
-                lineNumber: 195,
+                lineNumber: 492,
                 columnNumber: 24
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/components/CourseDetail.tsx",
-        lineNumber: 131,
+        lineNumber: 383,
         columnNumber: 5
     }, this);
 }
 function formatDuration(seconds) {
     const minutes = Math.floor(seconds / 60);
     return `${minutes}:${String(seconds % 60).padStart(2, "0")}`;
+}
+function formatRemainingTime(milliseconds) {
+    const seconds = Math.max(0, Math.floor(milliseconds / 1000));
+    const hours = Math.floor(seconds / 3600);
+    const minutes = Math.floor(seconds % 3600 / 60);
+    const remainingSeconds = seconds % 60;
+    return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:${String(remainingSeconds).padStart(2, "0")}`;
 }
 }),
 "[project]/src/components/VideoPlayer.tsx [app-ssr] (ecmascript)", ((__turbopack_context__) => {
@@ -1000,7 +1609,7 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$lucide$2d$re
 ;
 ;
 ;
-function VideoPlayer({ src, poster }) {
+function VideoPlayer({ src, poster, onRetry }) {
     const videoRef = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useRef"])(null);
     const [error, setError] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useState"])(false);
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["useEffect"])(()=>{
@@ -1047,12 +1656,12 @@ function VideoPlayer({ src, poster }) {
                         fill: "currentColor"
                     }, void 0, false, {
                         fileName: "[project]/src/components/VideoPlayer.tsx",
-                        lineNumber: 44,
+                        lineNumber: 52,
                         columnNumber: 39
                     }, this)
                 }, void 0, false, {
                     fileName: "[project]/src/components/VideoPlayer.tsx",
-                    lineNumber: 44,
+                    lineNumber: 52,
                     columnNumber: 9
                 }, this),
                 /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
@@ -1062,20 +1671,20 @@ function VideoPlayer({ src, poster }) {
                             size: 15
                         }, void 0, false, {
                             fileName: "[project]/src/components/VideoPlayer.tsx",
-                            lineNumber: 45,
+                            lineNumber: 53,
                             columnNumber: 47
                         }, this),
                         " Nội dung video sẽ xuất hiện tại đây"
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/VideoPlayer.tsx",
-                    lineNumber: 45,
+                    lineNumber: 53,
                     columnNumber: 9
                 }, this)
             ]
         }, void 0, true, {
             fileName: "[project]/src/components/VideoPlayer.tsx",
-            lineNumber: 43,
+            lineNumber: 51,
             columnNumber: 7
         }, this);
     }
@@ -1084,10 +1693,21 @@ function VideoPlayer({ src, poster }) {
         children: [
             error ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                 className: "video-error",
-                children: "Không thể phát video. Kiểm tra URL HLS và quyền đọc của storage."
-            }, void 0, false, {
+                children: [
+                    "Không thể phát video hoặc quyền phát đã hết hạn. ",
+                    onRetry && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                        type: "button",
+                        onClick: onRetry,
+                        children: "Lấy lại quyền phát"
+                    }, void 0, false, {
+                        fileName: "[project]/src/components/VideoPlayer.tsx",
+                        lineNumber: 60,
+                        columnNumber: 106
+                    }, this)
+                ]
+            }, void 0, true, {
                 fileName: "[project]/src/components/VideoPlayer.tsx",
-                lineNumber: 52,
+                lineNumber: 60,
                 columnNumber: 16
             }, this) : null,
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$server$2f$route$2d$modules$2f$app$2d$page$2f$vendored$2f$ssr$2f$react$2d$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$ssr$5d$__$28$ecmascript$29$__["jsxDEV"])("video", {
@@ -1098,13 +1718,13 @@ function VideoPlayer({ src, poster }) {
                 className: "video-element"
             }, void 0, false, {
                 fileName: "[project]/src/components/VideoPlayer.tsx",
-                lineNumber: 53,
+                lineNumber: 61,
                 columnNumber: 7
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/components/VideoPlayer.tsx",
-        lineNumber: 51,
+        lineNumber: 59,
         columnNumber: 5
     }, this);
 }
@@ -1113,219 +1733,45 @@ function VideoPlayer({ src, poster }) {
 "use strict";
 
 __turbopack_context__.s([
-    "categories",
-    ()=>categories,
-    "courses",
-    ()=>courses
+    "courseFromApi",
+    ()=>courseFromApi,
+    "resolveApiAssetUrl",
+    ()=>resolveApiAssetUrl
 ]);
-const categories = [
-    "Tất cả",
-    "Thiết kế",
-    "Công nghệ",
-    "Kinh doanh",
-    "Nhiếp ảnh"
-];
-const courses = [
-    {
-        id: "design-system",
-        slug: "design-system-tu-a-den-z",
-        title: "Thiết kế Design System từ A đến Z",
-        category: "Thiết kế",
-        instructor: "Minh Anh Nguyễn",
-        rating: 4.9,
-        students: "2.4k",
-        price: 799000,
-        hours: "8 giờ 20 phút",
-        level: "Cơ bản đến nâng cao",
-        description: "Xây dựng hệ thống thiết kế nhất quán, dễ mở rộng và thật sự hữu ích cho cả đội ngũ sản phẩm.",
-        thumbnail: "https://images.unsplash.com/photo-1558655146-d09347e92766?auto=format&fit=crop&w=960&q=85",
-        accent: "#d8ef73",
-        bestseller: true,
-        lessons: [
-            {
-                id: "ds-1",
-                title: "Tư duy hệ thống trong thiết kế",
-                duration: "12:08"
-            },
-            {
-                id: "ds-2",
-                title: "Từ token màu đến ngôn ngữ thị giác",
-                duration: "18:42"
-            },
-            {
-                id: "ds-3",
-                title: "Component và biến thể có chủ đích",
-                duration: "21:16"
-            },
-            {
-                id: "ds-4",
-                title: "Đưa hệ thống vào quy trình sản phẩm",
-                duration: "16:30"
-            }
-        ]
-    },
-    {
-        id: "python-data",
-        slug: "python-phan-tich-du-lieu-thuc-te",
-        title: "Python cho phân tích dữ liệu thực tế",
-        category: "Công nghệ",
-        instructor: "Quang Lê",
-        rating: 4.8,
-        students: "1.8k",
-        price: 649000,
-        hours: "11 giờ 05 phút",
-        level: "Cơ bản",
-        description: "Từ những dòng code Python đầu tiên đến một quy trình phân tích dữ liệu có thể áp dụng ngay trong công việc.",
-        thumbnail: "https://images.unsplash.com/photo-1515879218367-8466d910aaa4?auto=format&fit=crop&w=960&q=85",
-        accent: "#a9d8d2",
-        lessons: [
-            {
-                id: "py-1",
-                title: "Làm quen với notebook và dữ liệu",
-                duration: "14:22"
-            },
-            {
-                id: "py-2",
-                title: "Làm sạch dữ liệu với Pandas",
-                duration: "19:10"
-            },
-            {
-                id: "py-3",
-                title: "Khám phá và kể chuyện bằng số liệu",
-                duration: "23:44"
-            }
-        ]
-    },
-    {
-        id: "brand-story",
-        slug: "ke-chuyen-thuong-hieu-bang-noi-dung",
-        title: "Kể chuyện thương hiệu bằng nội dung",
-        category: "Kinh doanh",
-        instructor: "Thu Hà Trần",
-        rating: 4.9,
-        students: "980",
-        price: 529000,
-        hours: "6 giờ 40 phút",
-        level: "Mọi cấp độ",
-        description: "Tìm tiếng nói riêng cho thương hiệu và biến ý tưởng thành nội dung khiến người đọc muốn dừng lại.",
-        thumbnail: "https://images.unsplash.com/photo-1455390582262-044cdead277a?auto=format&fit=crop&w=960&q=85",
-        accent: "#f2b29f",
-        bestseller: true,
-        lessons: [
-            {
-                id: "br-1",
-                title: "Thương hiệu có điều gì để kể?",
-                duration: "11:45"
-            },
-            {
-                id: "br-2",
-                title: "Tìm chất giọng và góc nhìn",
-                duration: "16:38"
-            },
-            {
-                id: "br-3",
-                title: "Viết nội dung có nhịp điệu",
-                duration: "20:05"
-            }
-        ]
-    },
-    {
-        id: "film-photo",
-        slug: "nhiep-anh-phim-cho-nguoi-moi",
-        title: "Nhiếp ảnh phim cho người mới",
-        category: "Nhiếp ảnh",
-        instructor: "Bảo Trần",
-        rating: 4.7,
-        students: "740",
-        price: 459000,
-        hours: "5 giờ 15 phút",
-        level: "Cơ bản",
-        description: "Làm chủ ánh sáng, cuộn phim và khoảnh khắc để mỗi khung hình đều mang một câu chuyện riêng.",
-        thumbnail: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=960&q=85",
-        accent: "#efd68d",
-        lessons: [
-            {
-                id: "ph-1",
-                title: "Chiếc máy ảnh phim đầu tiên",
-                duration: "10:18"
-            },
-            {
-                id: "ph-2",
-                title: "Đọc sáng và chọn tốc độ",
-                duration: "17:52"
-            },
-            {
-                id: "ph-3",
-                title: "Một cuộn phim, một câu chuyện",
-                duration: "14:33"
-            }
-        ]
-    },
-    {
-        id: "figma-prototype",
-        slug: "figma-tu-wireframe-den-prototype",
-        title: "Figma: từ wireframe đến prototype",
-        category: "Thiết kế",
-        instructor: "Hoàng Phạm",
-        rating: 4.8,
-        students: "1.2k",
-        price: 579000,
-        hours: "7 giờ 30 phút",
-        level: "Cơ bản",
-        description: "Tạo prototype đủ thuyết phục để kiểm chứng ý tưởng trước khi một dòng code được viết ra.",
-        thumbnail: "https://images.unsplash.com/photo-1586717791821-3f44a563fa4c?auto=format&fit=crop&w=960&q=85",
-        accent: "#c2bee9",
-        lessons: [
-            {
-                id: "fg-1",
-                title: "Dựng khung bằng Auto Layout",
-                duration: "15:12"
-            },
-            {
-                id: "fg-2",
-                title: "Component, variant và trạng thái",
-                duration: "22:06"
-            },
-            {
-                id: "fg-3",
-                title: "Prototype tương tác có ý nghĩa",
-                duration: "18:31"
-            }
-        ]
-    },
-    {
-        id: "product-growth",
-        slug: "product-growth-cho-startup",
-        title: "Product Growth cho startup",
-        category: "Kinh doanh",
-        instructor: "Linh Đỗ",
-        rating: 4.6,
-        students: "610",
-        price: 699000,
-        hours: "9 giờ 10 phút",
-        level: "Trung cấp",
-        description: "Tìm điểm tăng trưởng có thể đo lường, thử nghiệm nhanh và xây dựng động lực bền vững cho sản phẩm.",
-        thumbnail: "https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=960&q=85",
-        accent: "#efb1c9",
-        lessons: [
-            {
-                id: "pg-1",
-                title: "Vòng lặp tăng trưởng sản phẩm",
-                duration: "13:28"
-            },
-            {
-                id: "pg-2",
-                title: "Đo hành vi thay vì chỉ nhìn lượt xem",
-                duration: "18:19"
-            },
-            {
-                id: "pg-3",
-                title: "Thiết kế thử nghiệm nhỏ",
-                duration: "16:02"
-            }
-        ]
+function resolveApiAssetUrl(value) {
+    if (!value) return "";
+    if (/^https?:\/\//i.test(value)) return value;
+    if (value.startsWith("/")) {
+        const apiOrigin = process.env.NEXT_PUBLIC_API_URL;
+        if (apiOrigin?.startsWith("http")) return new URL(value, apiOrigin).toString();
+        return value;
     }
-];
+    return value;
+}
+function courseFromApi(value) {
+    const instructor = value.instructor;
+    const instructorName = typeof instructor === "string" ? instructor : instructor && typeof instructor === "object" && "name" in instructor ? String(instructor.name ?? "") : "";
+    const count = value._count;
+    const enrollmentCount = value.enrollmentCount ?? (count && typeof count === "object" && "enrollments" in count ? count.enrollments : 0);
+    return {
+        id: String(value.id ?? value.slug ?? ""),
+        slug: String(value.slug ?? value.id ?? ""),
+        title: String(value.title ?? ""),
+        category: String(value.category ?? "Chưa phân loại"),
+        tags: Array.isArray(value.tags) ? value.tags.map(String) : [],
+        instructor: instructorName || "Giảng viên",
+        rating: Number(value.rating ?? 0),
+        reviewCount: Number(value.reviewCount ?? 0),
+        students: String(enrollmentCount ?? ""),
+        price: Number(value.price ?? 0),
+        hours: "—",
+        level: String(value.level ?? "Mọi cấp độ"),
+        description: String(value.description ?? ""),
+        thumbnail: typeof value.thumbnail === "string" ? value.thumbnail : "",
+        accent: "",
+        lessons: []
+    };
+}
 }),
 ]})(),
 "[externals]/next/dist/server/app-render/module-loading/track-module-loading.external.js [external] (next/dist/server/app-render/module-loading/track-module-loading.external.js, cjs)", ((__turbopack_context__, module, exports) => {

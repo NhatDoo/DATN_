@@ -7,9 +7,9 @@
     "static/chunks/0cz1d0mv5g_q7.js"
   ],
   "lowPriorityFiles": [
-    "static/ojt96UDKoT_m5zndD9tG5/_buildManifest.js",
-    "static/ojt96UDKoT_m5zndD9tG5/_ssgManifest.js",
-    "static/ojt96UDKoT_m5zndD9tG5/_clientMiddlewareManifest.js"
+    "static/roUKlz8ZKQj9yiyB3YLPM/_buildManifest.js",
+    "static/roUKlz8ZKQj9yiyB3YLPM/_ssgManifest.js",
+    "static/roUKlz8ZKQj9yiyB3YLPM/_clientMiddlewareManifest.js"
   ],
   "rootMainFiles": [
     "static/chunks/1x6obpmlu1_c2.js",
@@ -53,7 +53,29 @@
         94553
       ]
     },
+    "/about/page": {
+      "otherChunks": [
+        "static/chunks/1x6obpmlu1_c2.js",
+        "static/chunks/3a2jhmbczkgwl.js",
+        "static/chunks/2ki52vdnbo2ft.js",
+        "static/chunks/3l_qmp-61z4yc.js"
+      ],
+      "runtimeModuleIds": [
+        94553
+      ]
+    },
     "/courses/[courseId]/page": {
+      "otherChunks": [
+        "static/chunks/1x6obpmlu1_c2.js",
+        "static/chunks/3a2jhmbczkgwl.js",
+        "static/chunks/2ki52vdnbo2ft.js",
+        "static/chunks/3l_qmp-61z4yc.js"
+      ],
+      "runtimeModuleIds": [
+        94553
+      ]
+    },
+    "/feedback/page": {
       "otherChunks": [
         "static/chunks/1x6obpmlu1_c2.js",
         "static/chunks/3a2jhmbczkgwl.js",
@@ -75,7 +97,29 @@
         94553
       ]
     },
+    "/instructor/page": {
+      "otherChunks": [
+        "static/chunks/1x6obpmlu1_c2.js",
+        "static/chunks/3a2jhmbczkgwl.js",
+        "static/chunks/2ki52vdnbo2ft.js",
+        "static/chunks/3l_qmp-61z4yc.js"
+      ],
+      "runtimeModuleIds": [
+        94553
+      ]
+    },
     "/login/page": {
+      "otherChunks": [
+        "static/chunks/1x6obpmlu1_c2.js",
+        "static/chunks/3a2jhmbczkgwl.js",
+        "static/chunks/2ki52vdnbo2ft.js",
+        "static/chunks/3l_qmp-61z4yc.js"
+      ],
+      "runtimeModuleIds": [
+        94553
+      ]
+    },
+    "/my-courses/page": {
       "otherChunks": [
         "static/chunks/1x6obpmlu1_c2.js",
         "static/chunks/3a2jhmbczkgwl.js",
@@ -98,6 +142,17 @@
       ]
     },
     "/register/page": {
+      "otherChunks": [
+        "static/chunks/1x6obpmlu1_c2.js",
+        "static/chunks/3a2jhmbczkgwl.js",
+        "static/chunks/2ki52vdnbo2ft.js",
+        "static/chunks/3l_qmp-61z4yc.js"
+      ],
+      "runtimeModuleIds": [
+        94553
+      ]
+    },
+    "/statistics/page": {
       "otherChunks": [
         "static/chunks/1x6obpmlu1_c2.js",
         "static/chunks/3a2jhmbczkgwl.js",

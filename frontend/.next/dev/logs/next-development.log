@@ -1,5 +1,9 @@
-{"timestamp":"00:00:07.795","source":"Server","level":"LOG","message":"- Cache Components enabled"}
-{"timestamp":"00:00:07.795","source":"Server","level":"LOG","message":"- Partial Prefetching enabled"}
-{"timestamp":"00:00:07.795","source":"Server","level":"LOG","message":""}
-{"timestamp":"00:00:10.816","source":"Server","level":"LOG","message":"○ Compiling / ..."}
-{"timestamp":"00:00:21.212","source":"Server","level":"WARN","message":"⚠ Blocked cross-origin request to Next.js dev resource /_next/hmr from \"127.0.0.1\".\nCross-origin access to Next.js dev resources is blocked by default for safety.\n\nTo allow this host in development, add it to \"allowedDevOrigins\" in next.config.js and restart the dev server:\n\n// next.config.js\nmodule.exports = {\n  allowedDevOrigins: ['127.0.0.1'],\n}\n\nRead more: https://nextjs.org/docs/app/api-reference/config/next-config-js/allowedDevOrigins"}
+{"timestamp":"00:00:02.321","source":"Server","level":"LOG","message":"- Cache Components enabled"}
+{"timestamp":"00:00:02.321","source":"Server","level":"LOG","message":"- Partial Prefetching enabled"}
+{"timestamp":"00:00:02.321","source":"Server","level":"LOG","message":"- Experiments (use with caution):"}
+{"timestamp":"00:00:02.321","source":"Server","level":"LOG","message":"  · proxyClientMaxBodySize: \"520mb\""}
+{"timestamp":"00:00:02.322","source":"Server","level":"LOG","message":""}
+{"timestamp":"00:00:31.181","source":"Server","level":"LOG","message":"○ Compiling / ..."}
+{"timestamp":"00:00:38.030","source":"Browser","level":"INFO","message":"Download the React DevTools for a better development experience: https://react.dev/link/react-devtools"}
+{"timestamp":"00:01:19.226","source":"Browser","level":"WARN","message":"Detected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior=\"smooth\"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior"}
+{"timestamp":"00:01:19.262","source":"Server","level":"WARN","message":"[browser] \"\\u001b[33mDetected `scroll-behavior: smooth` on the `<html>` element. To disable smooth scrolling during route transitions, add `data-scroll-behavior=\\\"smooth\\\"` to your <html> element. Learn more: https://nextjs.org/docs/messages/missing-data-scroll-behavior\\u001b[39m\""}
